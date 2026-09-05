@@ -2,7 +2,7 @@
  * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see https://ckeditor.com/legal/ckeditor-oss-license
  */
-
+CKEDITOR.addCss('html { background-color: #edf0f5; min-height: 100%; }');
 CKEDITOR.editorConfig = function (config) {
 	// Define o idioma fixo para Português do Brasil
 	config.language = 'pt-br';
@@ -17,22 +17,24 @@ CKEDITOR.editorConfig = function (config) {
 	// Habilita a correção ortográfica nativa do navegador
 	config.disableNativeSpellChecker = false;
 
+	// Altura para visualização confortável da folha A4
+	config.height = 850;
+
 	config.toolbarGroups = [
-		{ name: 'document', groups: ['mode', 'document', 'doctools'] },
-		{ name: 'clipboard', groups: ['clipboard', 'undo'] },
-		{ name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
-		{ name: 'forms', groups: ['forms'] },
-		{ name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
-		{ name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
-		{ name: 'links', groups: ['links'] },
-		{ name: 'insert', groups: ['insert'] },
-		'/',
 		{ name: 'styles', groups: ['styles'] },
+		{ name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
 		{ name: 'colors', groups: ['colors'] },
+		{ name: 'forms', groups: ['forms'] },
+		{ name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
+		{ name: 'insert', groups: ['insert'] },
+		{ name: 'links', groups: ['links'] },
+		{ name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
+		{ name: 'clipboard', groups: ['clipboard', 'undo'] },
 		{ name: 'tools', groups: ['tools'] },
+		{ name: 'document', groups: ['mode', 'document', 'doctools'] },
 		{ name: 'others', groups: ['others'] },
 		{ name: 'about', groups: ['about'] }
 	];
 
-	config.removeButtons = 'Save,NewPage,Preview,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Replace,SelectAll,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Subscript,Superscript,CreateDiv,BidiLtr,BidiRtl,Language,Anchor,Smiley,SpecialChar,Iframe,Styles,Format,Maximize,About';
+	config.removeButtons = 'Save,NewPage,Preview,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Replace,SelectAll,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Subscript,Superscript,CreateDiv,BidiLtr,BidiRtl,Language,Anchor,Smiley,SpecialChar,Iframe,Styles,Format,Maximize,About'
 };
