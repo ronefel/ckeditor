@@ -11,6 +11,8 @@ CKEDITOR.editorConfig = function (config) {
 	config.removePlugins = 'exportpdf,scayt';
 	config.extraPlugins = 'lineheight';
 
+	config.fontSize_sizes = '8/8pt;9/9pt;10/10pt;11/11pt;12/12pt;14/14pt;16/16pt;18/18pt;20/20pt;22/22pt;24/24pt;26/26pt;28/28pt;36/36pt;48/48pt;72/72pt';
+
 	// Desativa a notificação de checagem de versão/segurança (versão não-LTS)
 	config.versionCheck = false;
 
@@ -18,7 +20,9 @@ CKEDITOR.editorConfig = function (config) {
 	config.disableNativeSpellChecker = false;
 
 	// Altura para visualização confortável da folha A4
-	config.height = 850;
+	config.height = 600;
+
+	config.bodyClass = 'document-editor';
 
 	config.toolbarGroups = [
 		{ name: 'styles', groups: ['styles'] },

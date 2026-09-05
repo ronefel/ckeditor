@@ -1,183 +1,324 @@
 /*
-Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
-For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+Copyright (c) 2003-2016, CKSource - Frederico Knabben. All rights reserved.
+For licensing, see LICENSE.md or http://ckeditor.com/license
 */
 
-/* ==========================================================================
-   Configuração de Página Oficial para mPDF e Impressão
-   ========================================================================== */
-@page {
-	size: A4 portrait;
-	margin: 10mm;
+@font-face {
+	font-family: 'Nunito Sans';
+	font-style: normal;
+	font-weight: 200;
+	src:
+		url('../../../fonts/legacy/NunitoSans-ExtraLight.woff2') format('woff2'),
+		url('../../../fonts/legacy/NunitoSans-ExtraLight.woff') format('woff'),
+		url('../../../fonts/legacy/NunitoSans-ExtraLight.ttf') format('ttf')
 }
 
-/* ==========================================================================
-   Estilização da Página (Escopada na classe nativa .cke_editable)
-   - 100% compatível com mPDF e Navegadores
-   - Sem poluição ou vazamento para estilos fora do editor
-   ========================================================================== */
+@font-face {
+	font-family: 'Nunito Sans';
+	font-style: normal;
+	font-weight: 400;
+	src:
+		url('../../../fonts/legacy/NunitoSans-Regular.woff2') format('woff2'),
+		url('../../../fonts/legacy/NunitoSans-Regular.woff') format('woff'),
+		url('../../../fonts/legacy/NunitoSans-Regular.ttf') format('ttf')
+}
+
+@font-face {
+	font-family: 'Nunito Sans';
+	font-style: normal;
+	font-weight: 600;
+	src:
+		url('../../../fonts/legacy/NunitoSans-SemiBold.woff2') format('woff2'),
+		url('../../../fonts/legacy/NunitoSans-SemiBold.woff') format('woff'),
+		url('../../../fonts/legacy/NunitoSans-SemiBold.ttf') format('ttf')
+}
+
+@font-face {
+	font-family: 'Nunito Sans';
+	font-style: normal;
+	font-weight: 700;
+	src:
+		url('../../../fonts/legacy/NunitoSans-Bold.woff2') format('woff2'),
+		url('../../../fonts/legacy/NunitoSans-Bold.woff') format('woff'),
+		url('../../../fonts/legacy/NunitoSans-Bold.ttf') format('ttf')
+}
+
+body {
+	/* Font */
+	font-family: sans-serif, Arial, Verdana, "Trebuchet MS";
+	font-size: 12px;
+
+	/* Text color */
+	color: #333;
+
+	/* Remove the background color to make it transparent */
+	background-color: #fff;
+
+	margin: 20px;
+}
+
 .cke_editable {
-	background-color: #ffffff;
+	font-size: 13px;
+	line-height: 1.6;
+
+	/* Fix for missing scrollbars with RTL texts. (#10488) */
+	word-wrap: break-word;
+}
+
+@media screen and (max-width: 768px) {
+	.cke_editable {
+		font-size: 16px;
+	}
+}
+
+blockquote {
+	font-style: italic;
+	font-family: Georgia, Times, "Times New Roman", serif;
+	padding: 2px 0;
+	border-style: solid;
+	border-color: #ccc;
+	border-width: 0;
+}
+
+.cke_contents_ltr blockquote {
+	padding-left: 20px;
+	padding-right: 8px;
+	border-left-width: 5px;
+}
+
+.cke_contents_rtl blockquote {
+	padding-left: 8px;
+	padding-right: 20px;
+	border-right-width: 5px;
+}
+
+a {
+	color: #0782C1;
+}
+
+ol,
+ul,
+dl {
+	/* IE7: reset rtl list margin. (#7334) */
+	*margin-right: 0px;
+	/* preserved spaces for list items with text direction other than the list. (#6249,#8049)*/
+	padding: 0 40px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: normal;
+	line-height: 1.2;
+}
+
+hr {
+	border: 0px;
+	border-top: 1px solid #ccc;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+img.right {
+	border: 1px solid #ccc;
+	float: right;
+	margin-left: 15px;
+	padding: 5px;
+}
+
+img.left {
+	border: 1px solid #ccc;
+	float: left;
+	margin-right: 15px;
+	padding: 5px;
+}
+
+pre {
+	white-space: pre-wrap;
+	/* CSS 2.1 */
+	word-wrap: break-word;
+	/* IE7 */
+	-moz-tab-size: 4;
+	tab-size: 4;
+}
+
+.marker {
+	background-color: Yellow;
+}
+
+span[lang] {
+	font-style: italic;
+}
+
+blockquote p:first-of-type {
+	margin-bottom: 1.5rem;
+}
+
+a>img {
+	padding: 1px;
+	margin: 1px;
+	border: none;
+	outline: 1px solid #0782C1;
+}
+
+/* Widget Styles */
+.code-featured {
+	border: 5px solid red;
+}
+
+.math-featured {
+	padding: 20px;
+	box-shadow: 0 0 2px rgba(200, 0, 0, 1);
+	background-color: rgba(255, 0, 0, 0.05);
+	margin: 10px;
+}
+
+.image-clean {
+	border: 0;
+	background: none;
+	padding: 0;
+}
+
+.image-clean>figcaption {
+	font-size: .9em;
+	text-align: right;
+}
+
+.image-grayscale {
+	background-color: white;
+	color: #666;
+}
+
+.image-grayscale img,
+img.image-grayscale {
+	filter: grayscale(100%);
+}
+
+.embed-240p {
+	max-width: 426px;
+	max-height: 240px;
+	margin: 0 auto;
+}
+
+.embed-360p {
+	max-width: 640px;
+	max-height: 360px;
+	margin: 0 auto;
+}
+
+.embed-480p {
+	max-width: 854px;
+	max-height: 480px;
+	margin: 0 auto;
+}
+
+.embed-720p {
+	max-width: 1280px;
+	max-height: 720px;
+	margin: 0 auto;
+}
+
+.embed-1080p {
+	max-width: 1920px;
+	max-height: 1080px;
+	margin: 0 auto;
+}
+
+body.document-editor {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 11pt;
 	line-height: 1.15;
 	color: #222222;
-	word-wrap: break-word;
-	cursor: text;
+	width: 21cm;
+	min-height: 21cm;
+	padding: 1cm 1cm 1cm;
+	margin: 0.5cm auto;
+	border: 1px #D3D3D3 solid;
+	border-radius: 5px;
+	background: white;
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
 }
 
-/* Parágrafos e Títulos */
-.cke_editable p {
-	margin: 0 0 8pt 0;
+body.document-editor,
+body.document-editor td,
+body.document-editor th {
+	font-size: 0.9em;
 }
 
-.cke_editable h1 {
-	font-size: 16pt;
-	font-weight: bold;
-	color: #1a1a1a;
-	margin: 12pt 0 4pt 0;
+body.document-editor h1 {
+	margin-bottom: 1cm;
 }
 
-.cke_editable h2 {
-	font-size: 13pt;
-	font-weight: bold;
-	color: #1a1a1a;
-	margin: 10pt 0 3pt 0;
-}
-
-.cke_editable h3 {
-	font-size: 12pt;
-	font-weight: bold;
-	color: #1a1a1a;
-	margin: 8pt 0 2pt 0;
-}
-
-.cke_editable h4,
-.cke_editable h5,
-.cke_editable h6 {
-	font-size: 11pt;
-	font-weight: bold;
-	color: #1a1a1a;
-	margin: 6pt 0 2pt 0;
-}
-
-/* Listas */
-.cke_editable ol,
-.cke_editable ul,
-.cke_editable dl {
-	padding-left: 25pt;
-	margin: 0 0 8pt 0;
-}
-
-.cke_editable li {
-	margin-bottom: 2pt;
-}
-
-/* Tabelas (100% compatíveis com motor do mPDF) */
-.cke_editable table {
+body.document-editor table {
+	margin: 0;
 	border-collapse: collapse;
 	width: 100%;
 }
 
-/* Citações */
-.cke_editable blockquote {
-	padding: 4pt 10pt;
-	margin: 8pt 0 8pt 15pt;
-	border-left: 3pt solid #0078d4;
-	color: #555555;
-	font-style: italic;
+body.document-editor table td {
+	border-right: 1px solid #999;
+	border-bottom: 1px solid #999;
 }
 
-.cke_contents_rtl.cke_editable blockquote {
-	border-left: none;
-	border-right: 3pt solid #0078d4;
-	margin: 8pt 15pt 8pt 0;
+body.document-editor table td:first-of-type {
+	border-left: 1px solid #999;
 }
 
-/* Links */
-.cke_editable a {
-	color: #0563c1;
-	text-decoration: underline;
+body.document-editor table tr:first-of-type td {
+	border-top: 1px solid #999;
 }
 
-/* Linha divisória */
-.cke_editable hr {
-	border: 0;
-	border-top: 1px solid #d0d0d0;
-	margin: 12pt 0;
+body.document-editor table thead th {
+	border-top: 1px solid #999;
+	border-right: 1px solid #999;
 }
 
-/* Imagens */
-.cke_editable img {
-	max-width: 100%;
+body.document-editor table thead th:first-of-type {
+	border-left: 1px solid #999;
 }
 
-.cke_editable img.right {
+body.document-editor p {
+	margin: 0 0 8pt 0;
+}
+
+body.document-editor blockquote {
+	padding-left: 22px;
+	padding-right: 22px;
+	margin-left: 46px;
+	margin-right: 46px;
+}
+
+h5 {
+	font-weight: 700;
+}
+
+body.a11ychecker h2 {
+	padding-bottom: 3px;
+	font-size: 15px;
+	line-height: 1.225;
+	border-bottom: 1px solid #eee;
+}
+
+body.a11ychecker h3,
+body.a11ychecker h4 {
+	font-weight: bolder;
+}
+
+/* Make it similar to handsontable appearance, but don't affect handsontable itself. */
+body.spreadsheet-editor table:not(.htCore) {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+body.spreadsheet-editor table:not(.htCore) th,
+body.spreadsheet-editor table:not(.htCore) td {
 	border: 1px solid #ccc;
-	float: right;
-	margin-left: 10pt;
-	margin-bottom: 8pt;
-	padding: 4pt;
-}
-
-.cke_editable img.left {
-	border: 1px solid #ccc;
-	float: left;
-	margin-right: 10pt;
-	margin-bottom: 8pt;
-	padding: 4pt;
-}
-
-/* Bloco de Código */
-.cke_editable pre {
-	white-space: pre-wrap;
-	word-wrap: break-word;
-	background: #f7f9fa;
-	border: 1px solid #e1e4e8;
-	padding: 8pt;
-	font-family: "Courier New", Courier, monospace;
-	font-size: 10pt;
-	margin: 8pt 0;
-}
-
-/* Quebra de página */
-.cke_editable .pagebreak,
-.cke_editable [style*="page-break-after: always"] {
-	page-break-after: always;
-}
-
-/* ==========================================================================
-   Visualização A4 NA TELA (Apenas no Navegador / CKEditor)
-   O mPDF ignora @media screen, evitando distorções no PDF final.
-   ========================================================================== */
-@media screen {
-
-	body.cke_editable {
-		width: 210mm;
-		min-height: 297mm;
-		padding: 10mm;
-		margin: 30px auto 30px auto;
-		box-sizing: border-box;
-		border: 1px solid #d4d7dc;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
-	}
-}
-
-/* ==========================================================================
-   Impressão Física / mPDF
-   ========================================================================== */
-@media print {
-	html {
-		background: transparent !important;
-		padding: 0 !important;
-	}
-
-	.cke_editable {
-		width: 100% !important;
-		min-height: auto !important;
-		margin: 0 !important;
-		padding: 0 !important;
-		border: none !important;
-		box-shadow: none !important;
-	}
+	line-height: 21px;
 }
