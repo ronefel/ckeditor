@@ -322,3 +322,122 @@ body.spreadsheet-editor table:not(.htCore) td {
 	border: 1px solid #ccc;
 	line-height: 21px;
 }
+
+body.document-editor input[type="text"] {
+	border: 0;
+	background-color: #ffefbf;
+	padding: 2px;
+	outline: none;
+}
+
+/* ==========================================================================
+   Estilos do Plugin qfields (Campos do Questionário / Template)
+   ========================================================================== */
+.qfield-widget {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	vertical-align: middle;
+	margin: 2px 4px;
+	background: #f8fafc;
+	border: 1.5px dashed #94a3b8;
+	border-radius: 6px;
+	padding: 2px 6px;
+	cursor: pointer;
+	user-select: none;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 11px;
+	transition: all 0.2s ease;
+}
+
+/* Aparência específica para campos do tipo TEXTO (fundo #ffefbf, idêntico ao modelo) */
+.qfield-widget.qfield-text-styled {
+	background-color: #ffefbf !important;
+	border: none !important;
+	border-radius: 0 !important;
+	padding: 0 4px !important;
+	margin: 0 2px !important;
+	font-family: inherit !important;
+	font-size: inherit !important;
+	color: #000 !important;
+	box-shadow: none !important;
+}
+
+.cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-text-styled,
+.cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-text-styled {
+	outline: 1px dashed #d97706 !important;
+	border: none !important;
+	background-color: #fef08a !important;
+	box-shadow: none !important;
+}
+
+.qfield-widget:not(.qfield-text-styled):hover {
+	border-color: #3b82f6;
+	background-color: #eff6ff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled),
+.cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled) {
+	border-color: #2563eb;
+	border-style: solid;
+	background-color: #dbeafe;
+	box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.qfield-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	height: 100%;
+}
+
+.qfield-badge-type {
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	padding: 2px 5px;
+	border-radius: 4px;
+	color: #ffffff;
+	background-color: #64748b;
+	line-height: 1;
+}
+
+/* Cores por tipo de campo */
+.qfield-type-text .qfield-badge-type {
+	background-color: #0284c7; /* Azul Céu */
+}
+
+.qfield-type-textarea .qfield-badge-type {
+	background-color: #6366f1; /* Índigo */
+}
+
+.qfield-type-select .qfield-badge-type {
+	background-color: #059669; /* Verde Esmeralda */
+}
+
+.qfield-type-checkbox .qfield-badge-type {
+	background-color: #d97706; /* Âmbar */
+}
+
+.qfield-type-radio .qfield-badge-type {
+	background-color: #9333ea; /* Roxo */
+}
+
+.qfield-badge-name {
+	font-weight: 600;
+	color: #1e293b;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1;
+}
+
+.qfield-badge-req {
+	color: #ef4444;
+	font-weight: bold;
+	font-size: 13px;
+	margin-left: 2px;
+}

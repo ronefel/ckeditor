@@ -9,7 +9,8 @@ CKEDITOR.editorConfig = function (config) {
 	config.defaultLanguage = 'pt-br';
 
 	config.removePlugins = 'exportpdf,scayt';
-	config.extraPlugins = 'lineheight';
+	config.extraPlugins = 'lineheight,qfields';
+	config.allowedContent = true;
 
 	config.fontSize_sizes = '8/8pt;9/9pt;10/10pt;11/11pt;12/12pt;14/14pt;16/16pt;18/18pt;20/20pt;22/22pt;24/24pt;26/26pt;28/28pt;36/36pt;48/48pt;72/72pt';
 
@@ -28,7 +29,6 @@ CKEDITOR.editorConfig = function (config) {
 		{ name: 'styles', groups: ['styles'] },
 		{ name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
 		{ name: 'colors', groups: ['colors'] },
-		{ name: 'forms', groups: ['forms'] },
 		{ name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
 		{ name: 'insert', groups: ['insert'] },
 		{ name: 'links', groups: ['links'] },
@@ -40,5 +40,5 @@ CKEDITOR.editorConfig = function (config) {
 		{ name: 'about', groups: ['about'] }
 	];
 
-	config.removeButtons = 'Save,NewPage,Preview,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Replace,SelectAll,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Subscript,Superscript,CreateDiv,BidiLtr,BidiRtl,Language,Anchor,Smiley,SpecialChar,Iframe,Styles,Format,Maximize,About'
+	config.removeButtons = 'Save,NewPage,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Replace,SelectAll,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Subscript,Superscript,CreateDiv,BidiLtr,BidiRtl,Language,Anchor,Smiley,SpecialChar,Iframe,Styles,Format,Maximize,About'
 };
