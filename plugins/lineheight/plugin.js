@@ -30,32 +30,6 @@
 		return blocks;
 	}
 
-	function hasSpaceRemoved(editor) {
-		var blocks = getSelectedParagraphs(editor);
-		if (!blocks.length) return false;
-		var mb = blocks[0].getStyle('margin-bottom');
-		return mb === '0px' || mb === '0pt' || mb === '0';
-	}
-
-	function toggleParagraphSpace(editor) {
-		editor.focus();
-		editor.fire('saveSnapshot');
-		var blocks = getSelectedParagraphs(editor);
-		if (!blocks.length) return;
-
-		var isRemoved = hasSpaceRemoved(editor);
-		for (var i = 0; i < blocks.length; i++) {
-			if (isRemoved) {
-				// Devolve a margem padrão (remove o estilo inline margin-bottom: 0)
-				blocks[i].removeStyle('margin-bottom');
-			} else {
-				// Remove a margem após o parágrafo
-				blocks[i].setStyle('margin-bottom', '0');
-			}
-		}
-		editor.fire('saveSnapshot');
-	}
-
 	function addCombo(editor, comboName, styleType, lang, entries, defaultLabel, styleDefinition, order) {
 		var config = editor.config;
 		var names = (entries || '').split(';');
@@ -64,7 +38,7 @@
 			label: editor.lang.lineheight.title,
 			title: editor.lang.lineheight.title,
 			toolbar: 'styles,' + order,
-			allowedContent: 'p h1 h2 h3 h4 h5 h6 div li{line-height,margin-bottom}',
+			allowedContent: 'p h1 h2 h3 h4 h5 h6 div li{line-height}',
 			panel: {
 				css: [CKEDITOR.skin.getPath('editor')].concat(config.contentsCss),
 				multiSelect: false,
@@ -75,7 +49,7 @@
 				var defaultOptionLabel = '(' + (editor.lang.common.optionDefault || 'Padrão') + ')';
 
 				this.startGroup(lang.title);
-				// Primeira opção: (Padrão), idêntico ao select de tamanho da fonte
+				// Primeira opção: (Padrão), idêntico ao select de tamanho da fonte (FontSize)
 				this.add('', defaultOptionLabel, defaultOptionLabel);
 
 				for (var i = 0; i < names.length; i++) {
@@ -84,32 +58,8 @@
 					var val = parts[1] || name;
 					this.add(val, '<div style="line-height:' + val + ';">' + name + '</div>', name);
 				}
-
-				// Grupo para alternar espaço do parágrafo (estilo Word)
-				this.startGroup(lang.paragraphGroup || 'Espaçamento de Parágrafo');
-				this.add('toggle_space', '<span class="cke_lineheight_toggle_space">' + (lang.removeSpace || 'Remover espaço depois do parágrafo') + '</span>', lang.paragraphGroup || 'Espaço depois do parágrafo');
-			},
-			onOpen: function () {
-				var isRemoved = hasSpaceRemoved(editor);
-				var lang = editor.lang.lineheight;
-				var labelText = isRemoved ?
-					(lang.addSpace || 'Adicionar espaço depois do parágrafo') :
-					(lang.removeSpace || 'Remover espaço depois do parágrafo');
-
-				try {
-					var doc = this._.panel._.iframe.getFrameDocument();
-					var el = doc.findOne('.cke_lineheight_toggle_space');
-					if (el) {
-						el.setText(labelText);
-					}
-				} catch (e) { }
 			},
 			onClick: function (value) {
-				if (value === 'toggle_space') {
-					toggleParagraphSpace(editor);
-					return;
-				}
-
 				editor.focus();
 				editor.fire('saveSnapshot');
 				var blocks = getSelectedParagraphs(editor);
@@ -117,9 +67,10 @@
 
 				for (var i = 0; i < blocks.length; i++) {
 					if (!value || isSameValue) {
+						// Remove estilo inline caso selecione (Padrão) ou o mesmo valor
 						blocks[i].removeStyle('line-height');
 					} else {
-						// Altera apenas o line-height diretamente no bloco, preservando margin-bottom e outros estilos!
+						// Aplica o line-height diretamente no bloco pai (compatível com mPDF)
 						blocks[i].setStyle('line-height', value);
 					}
 				}

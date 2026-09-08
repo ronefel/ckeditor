@@ -157,12 +157,12 @@ span[lang] {
 }
 
 blockquote p:first-of-type {
-	margin-bottom: 1.5rem;
+	margin: 0;
 }
 
 a>img {
 	padding: 1px;
-	margin: 1px;
+	margin: 0;
 	border: none;
 	outline: 1px solid #0782C1;
 }
@@ -176,7 +176,7 @@ a>img {
 	padding: 20px;
 	box-shadow: 0 0 2px rgba(200, 0, 0, 1);
 	background-color: rgba(255, 0, 0, 0.05);
-	margin: 10px;
+	margin: 0;
 }
 
 .image-clean {
@@ -253,7 +253,7 @@ body.document-editor th {
 }
 
 body.document-editor h1 {
-	margin-bottom: 1cm;
+	margin: 0;
 }
 
 body.document-editor table {
@@ -285,7 +285,7 @@ body.document-editor table thead th:first-of-type {
 }
 
 body.document-editor p {
-	margin: 0 0 8pt 0;
+	margin: 0;
 }
 
 body.document-editor blockquote {
