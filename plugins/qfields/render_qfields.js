@@ -86,6 +86,7 @@ var QFieldsRenderer = (function() {
                     textarea.style.margin = '4px 0';
                     textarea.style.resize = 'vertical';
                     textarea.style.display = (width === '100%') ? 'block' : 'inline-block';
+                    textarea.style.lineHeight = '1.4';
                     if (placeholder) textarea.placeholder = placeholder;
                     if (isRequired) textarea.required = true;
                     targetNode = textarea;

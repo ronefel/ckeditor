@@ -2,28 +2,88 @@
 	function getSelectedParagraphs(editor) {
 		var selection = editor.getSelection();
 		if (!selection) return [];
-		var ranges = selection.getRanges();
 		var blocks = [];
 		var seen = {};
 
+		function isBlock(el) {
+			return el && el.type === CKEDITOR.NODE_ELEMENT && el.is('p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'li', 'td', 'th');
+		}
+
+		function getAscendantBlock(el) {
+			if (!el) return null;
+			if (isBlock(el)) return el;
+			return el.getAscendant({ p: 1, h1: 1, h2: 1, h3: 1, h4: 1, h5: 1, h6: 1, div: 1, li: 1, td: 1, th: 1 }, true);
+		}
+
+		function addBlock(block) {
+			if (!block) return;
+			if (block.equals(editor.editable())) return;
+			var id = block.getCustomData('lh_id') || CKEDITOR.tools.getNextId();
+			block.setCustomData('lh_id', id);
+			if (!seen[id]) {
+				seen[id] = true;
+				blocks.push(block);
+			}
+		}
+
+		// 1. Se um widget estiver focado, aplica diretamente no parágrafo/bloco pai do widget
+		if (editor.widgets && editor.widgets.focused) {
+			var widget = editor.widgets.focused;
+			var widgetBlock = getAscendantBlock(widget.element);
+			if (widgetBlock) {
+				addBlock(widgetBlock);
+				return blocks;
+			}
+		}
+
+		var ranges = selection.getRanges();
+		if (!ranges || !ranges.length) {
+			var start = selection.getStartElement();
+			addBlock(getAscendantBlock(start));
+			return blocks;
+		}
+
 		for (var i = 0; i < ranges.length; i++) {
-			var iterator = ranges[i].createIterator();
-			var block;
-			while ((block = iterator.getNextParagraph())) {
-				var id = block.getCustomData('lh_id') || CKEDITOR.tools.getNextId();
-				block.setCustomData('lh_id', id);
-				if (!seen[id]) {
-					seen[id] = true;
-					blocks.push(block);
+			var range = ranges[i];
+			var startNode = range.startContainer;
+			var endNode = range.endContainer;
+
+			var startBlock = getAscendantBlock(startNode);
+			var endBlock = getAscendantBlock(endNode);
+
+			if (startBlock && endBlock && startBlock.equals(endBlock)) {
+				addBlock(startBlock);
+			} else {
+				if (startBlock) addBlock(startBlock);
+
+				// Se abrange múltiplos blocos, busca blocos dentro do ancestral comum sem criar novos parágrafos
+				var common = range.getCommonAncestor(true, true);
+				if (common) {
+					var walkerRange = range.clone();
+					var walker = new CKEDITOR.dom.walker(walkerRange);
+					var node;
+					while ((node = walker.next())) {
+						if (isBlock(node)) {
+							addBlock(node);
+						} else {
+							var parentBlock = getAscendantBlock(node);
+							if (parentBlock && !parentBlock.equals(common)) {
+								addBlock(parentBlock);
+							}
+						}
+					}
 				}
+
+				if (endBlock) addBlock(endBlock);
 			}
 		}
 
 		if (!blocks.length) {
-			var start = selection.getStartElement();
-			var ascendant = start && (start.is('p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'li') ? start : start.getAscendant({ p: 1, h1: 1, h2: 1, h3: 1, h4: 1, h5: 1, h6: 1, div: 1, li: 1 }, true));
-			if (ascendant) {
-				blocks.push(ascendant);
+			var path = editor.elementPath();
+			if (path && path.block) {
+				addBlock(path.block);
+			} else if (path && path.blockLimit) {
+				addBlock(getAscendantBlock(path.blockLimit));
 			}
 		}
 

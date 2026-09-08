@@ -360,17 +360,45 @@ body.document-editor input[type="text"] {
 	font-size: inherit !important;
 	color: #000 !important;
 	box-shadow: none !important;
+	box-sizing: border-box !important;
 }
 
 .qfield-widget.qfield-text-styled {
 	padding: 0 4px !important;
 	margin: 0 2px !important;
+	line-height: normal !important;
+	vertical-align: middle !important;
+}
+
+.qfield-widget.qfield-text-styled .qfield-text-val {
+	line-height: normal !important;
+	vertical-align: middle !important;
 }
 
 .qfield-widget.qfield-textarea-styled {
+	display: block !important;
+	width: 100% !important;
 	padding: 6px 8px !important;
 	margin: 4px 0 !important;
+	line-height: 1.4 !important;
 	vertical-align: top !important;
+}
+
+.qfield-widget.qfield-textarea-styled .qfield-textarea-val {
+	display: block !important;
+	line-height: 1.4 !important;
+	white-space: pre-wrap !important;
+}
+
+.cke_widget_wrapper {
+	line-height: normal !important;
+}
+
+.cke_widget_wrapper:has(.qfield-textarea-styled) {
+	display: block !important;
+	clear: both !important;
+	width: 100% !important;
+	line-height: normal !important;
 }
 
 .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-text-styled,

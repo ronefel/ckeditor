@@ -79,13 +79,13 @@ CKEDITOR.dialog.add('qfieldDialog', function(editor) {
                     {
                         id: 'label',
                         type: 'text',
-                        label: 'Rótulo / Descrição do Campo',
-                        'default': 'Novo Campo',
+                        label: 'Rótulo / Descrição do Campo (Opcional)',
+                        'default': '',
                         setup: function(widget) {
                             this.setValue(widget.data.label || '');
                         },
                         commit: function(widget) {
-                            widget.setData('label', this.getValue() || this.getDialog().getValueOf('tab-basic', 'name'));
+                            widget.setData('label', this.getValue() ? this.getValue().trim() : '');
                         }
                     },
                     {

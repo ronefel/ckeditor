@@ -35,7 +35,7 @@
                     var el = this.element;
                     var type = el.getAttribute('data-qfield-type') || 'text';
                     var name = el.getAttribute('data-qfield-name') || 'campo';
-                    var label = el.getAttribute('data-qfield-label') || el.getText().trim() || name;
+                    var label = el.hasAttribute('data-qfield-label') ? el.getAttribute('data-qfield-label') : '';
                     var width = el.getAttribute('data-qfield-width') || (type === 'text' ? '200px' : '220px');
                     var height = el.getAttribute('data-qfield-height') || (type === 'text' ? '22px' : '32px');
                     var required = el.getAttribute('data-qfield-required') === 'true';
@@ -57,7 +57,7 @@
                     var el = this.element;
                     var type = this.data.type || 'text';
                     var name = this.data.name || 'campo';
-                    var label = this.data.label || name;
+                    var label = this.data.label !== undefined ? this.data.label : '';
                     var width = this.data.width || '220px';
                     var height = this.data.height || '32px';
                     var required = !!this.data.required;
@@ -113,8 +113,9 @@
                         el.setStyle('border', 'none');
                         el.setStyle('cursor', 'pointer');
 
-                        var displayVal = placeholder || label || name;
-                        el.setHtml('<span class="qfield-text-val" style="display:inline-block;font-family:inherit;font-size:inherit;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">' + CKEDITOR.tools.htmlEncode(displayVal) + '</span>');
+                        var displayVal = label || placeholder || '';
+                        var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
+                        el.setHtml('<span class="qfield-text-val" style="display:inline-block;font-family:inherit;font-size:inherit;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">' + innerHtml + '</span>');
                     } else if (type === 'textarea') {
                         // Estilo textarea limpo: bloco amarelo claro uniforme multi-linhas
                         el.removeClass('qfield-badge-container');
@@ -130,9 +131,15 @@
                         el.setStyle('margin', '4px 0');
                         el.setStyle('border', 'none');
                         el.setStyle('cursor', 'pointer');
+                        el.setStyle('box-sizing', 'border-box');
 
-                        var displayVal = placeholder || label || name;
-                        el.setHtml('<span class="qfield-textarea-val" style="display:block;font-family:inherit;font-size:inherit;color:#111;white-space:pre-wrap;overflow:hidden;">' + CKEDITOR.tools.htmlEncode(displayVal) + '</span>');
+                        if (this.wrapper) {
+                            this.wrapper.setStyle('line-height', 'normal');
+                        }
+
+                        var displayVal = label || placeholder || '';
+                        var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
+                        el.setHtml('<span class="qfield-textarea-val" style="display:block;font-family:inherit;font-size:inherit;color:#111;line-height:1.4;white-space:pre-wrap;overflow:hidden;">' + innerHtml + '</span>');
                     } else {
                         // Outros tipos de campo (select, radio, checkbox)
                         el.removeClass('qfield-text-styled');
