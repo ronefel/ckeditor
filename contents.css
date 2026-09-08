@@ -350,35 +350,47 @@ body.document-editor input[type="text"] {
 	transition: all 0.2s ease;
 }
 
-/* Aparência específica para campos do tipo TEXTO (fundo #ffefbf, idêntico ao modelo) */
-.qfield-widget.qfield-text-styled {
+/* Aparência específica para campos do tipo TEXTO e TEXTAREA (fundo #ffefbf, idêntico ao modelo) */
+.qfield-widget.qfield-text-styled,
+.qfield-widget.qfield-textarea-styled {
 	background-color: #ffefbf !important;
 	border: none !important;
 	border-radius: 0 !important;
-	padding: 0 4px !important;
-	margin: 0 2px !important;
 	font-family: inherit !important;
 	font-size: inherit !important;
 	color: #000 !important;
 	box-shadow: none !important;
 }
 
+.qfield-widget.qfield-text-styled {
+	padding: 0 4px !important;
+	margin: 0 2px !important;
+}
+
+.qfield-widget.qfield-textarea-styled {
+	padding: 6px 8px !important;
+	margin: 4px 0 !important;
+	vertical-align: top !important;
+}
+
 .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-text-styled,
-.cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-text-styled {
+.cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-text-styled,
+.cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-textarea-styled,
+.cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-textarea-styled {
 	outline: 1px dashed #d97706 !important;
 	border: none !important;
 	background-color: #fef08a !important;
 	box-shadow: none !important;
 }
 
-.qfield-widget:not(.qfield-text-styled):hover {
+.qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):hover {
 	border-color: #3b82f6;
 	background-color: #eff6ff;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled),
-.cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled) {
+.cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled),
+.cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled) {
 	border-color: #2563eb;
 	border-style: solid;
 	background-color: #dbeafe;

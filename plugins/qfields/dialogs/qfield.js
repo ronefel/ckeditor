@@ -57,15 +57,19 @@ CKEDITOR.dialog.add('qfieldDialog', function(editor) {
                                 onChange: function() {
                                     var dialog = this.getDialog();
                                     var heightInput = dialog.getContentElement('tab-advanced', 'height');
+                                    var widthInput = dialog.getContentElement('tab-advanced', 'width');
                                     var currentType = this.getValue();
 
                                     if (heightInput) {
                                         if (currentType === 'text') {
                                             heightInput.setValue('22px');
+                                            if (widthInput && widthInput.getValue() === '100%') widthInput.setValue('200px');
                                         } else if (currentType === 'textarea') {
-                                            heightInput.setValue('80px');
+                                            heightInput.setValue('70px');
+                                            if (widthInput) widthInput.setValue('100%');
                                         } else if (currentType === 'select') {
                                             heightInput.setValue('28px');
+                                            if (widthInput && widthInput.getValue() === '100%') widthInput.setValue('200px');
                                         }
                                     }
                                 }

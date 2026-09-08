@@ -40,10 +40,7 @@ var QFieldsRenderer = (function() {
             var placeholder = campo.getAttribute('data-qfield-placeholder') || '';
             var optionsRaw = campo.getAttribute('data-qfield-options') || '';
 
-            var container = document.createElement('span');
-            container.style.display = 'inline-block';
-            container.style.verticalAlign = 'middle';
-            container.style.margin = '2px 0';
+            var targetNode = null;
 
             switch (type) {
                 case 'text':
@@ -52,6 +49,7 @@ var QFieldsRenderer = (function() {
                     input.name = name;
                     input.className = textClass;
                     input.style.width = width;
+                    input.style.maxWidth = '100%';
                     input.style.height = height || '22px';
                     input.style.backgroundColor = '#ffefbf';
                     input.style.border = 'none';
@@ -65,18 +63,32 @@ var QFieldsRenderer = (function() {
                     input.style.margin = '0 2px';
                     if (placeholder) input.placeholder = placeholder;
                     if (isRequired) input.required = true;
-                    container.appendChild(input);
+                    targetNode = input;
                     break;
 
                 case 'textarea':
                     var textarea = document.createElement('textarea');
                     textarea.name = name;
                     textarea.className = textareaClass;
-                    textarea.style.width = width;
-                    textarea.style.height = height;
+                    textarea.style.width = width || '100%';
+                    textarea.style.maxWidth = '100%';
+                    textarea.style.height = height || '60px';
+                    textarea.style.minHeight = height || '60px';
+                    textarea.style.backgroundColor = '#ffefbf';
+                    textarea.style.border = 'none';
+                    textarea.style.outline = 'none';
+                    textarea.style.fontFamily = 'inherit';
+                    textarea.style.fontSize = 'inherit';
+                    textarea.style.color = '#000';
+                    textarea.style.padding = '6px 8px';
+                    textarea.style.boxSizing = 'border-box';
+                    textarea.style.verticalAlign = 'top';
+                    textarea.style.margin = '4px 0';
+                    textarea.style.resize = 'vertical';
+                    textarea.style.display = (width === '100%') ? 'block' : 'inline-block';
                     if (placeholder) textarea.placeholder = placeholder;
                     if (isRequired) textarea.required = true;
-                    container.appendChild(textarea);
+                    targetNode = textarea;
                     break;
 
                 case 'select':
@@ -84,7 +96,11 @@ var QFieldsRenderer = (function() {
                     select.name = name;
                     select.className = selectClass;
                     select.style.width = width;
-                    select.style.height = height;
+                    select.style.maxWidth = '100%';
+                    select.style.height = height || '28px';
+                    select.style.boxSizing = 'border-box';
+                    select.style.verticalAlign = 'middle';
+                    select.style.margin = '0 2px';
                     if (isRequired) select.required = true;
 
                     select.appendChild(new Option('-- Selecione --', ''));
@@ -95,10 +111,14 @@ var QFieldsRenderer = (function() {
                         if (val) select.appendChild(new Option(val, val));
                     });
 
-                    container.appendChild(select);
+                    targetNode = select;
                     break;
 
                 case 'checkbox':
+                    var chkContainer = document.createElement('span');
+                    chkContainer.style.display = 'inline-block';
+                    chkContainer.style.verticalAlign = 'middle';
+                    chkContainer.style.margin = '2px 0';
                     var chkLabel = document.createElement('label');
                     chkLabel.className = checkboxLabelClass;
                     var chk = document.createElement('input');
@@ -109,10 +129,15 @@ var QFieldsRenderer = (function() {
 
                     chkLabel.appendChild(chk);
                     chkLabel.appendChild(document.createTextNode(label));
-                    container.appendChild(chkLabel);
+                    chkContainer.appendChild(chkLabel);
+                    targetNode = chkContainer;
                     break;
 
                 case 'radio':
+                    var radioContainer = document.createElement('span');
+                    radioContainer.style.display = 'inline-block';
+                    radioContainer.style.verticalAlign = 'middle';
+                    radioContainer.style.margin = '2px 0';
                     var radioOptions = optionsRaw.split(',');
                     radioOptions.forEach(function(opt) {
                         var val = opt.trim();
@@ -127,13 +152,16 @@ var QFieldsRenderer = (function() {
 
                             rLabel.appendChild(radio);
                             rLabel.appendChild(document.createTextNode(val));
-                            container.appendChild(rLabel);
+                            radioContainer.appendChild(rLabel);
                         }
                     });
+                    targetNode = radioContainer;
                     break;
             }
 
-            campo.parentNode.replaceChild(container, campo);
+            if (targetNode) {
+                campo.parentNode.replaceChild(targetNode, campo);
+            }
         });
 
         // 2. Garante que inputs HTML que por ventura já estejam no template também recebam estilos

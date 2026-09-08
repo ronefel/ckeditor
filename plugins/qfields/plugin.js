@@ -83,9 +83,24 @@
                     el.setStyle('width', width);
                     el.setStyle('max-width', '100%');
 
+                    // Aplica dimensões e exibição no wrapper do widget para garantir que o CKEditor respeite a largura
+                    if (this.wrapper) {
+                        this.wrapper.setStyle('box-sizing', 'border-box');
+                        this.wrapper.setStyle('max-width', '100%');
+                        this.wrapper.setStyle('width', width);
+                        if (width === '100%') {
+                            this.wrapper.setStyle('display', 'block');
+                            this.wrapper.setStyle('clear', 'both');
+                        } else {
+                            this.wrapper.setStyle('display', 'inline-block');
+                            this.wrapper.setStyle('vertical-align', type === 'textarea' ? 'top' : 'middle');
+                        }
+                    }
+
                     if (type === 'text') {
                         // Estilo limpo idêntico à imagem de referência: retângulo amarelo claro uniforme
                         el.removeClass('qfield-badge-container');
+                        el.removeClass('qfield-textarea-styled');
                         el.addClass('qfield-text-styled');
                         el.setStyle('display', 'inline-block');
                         el.setStyle('background-color', '#ffefbf');
@@ -100,9 +115,28 @@
 
                         var displayVal = placeholder || label || name;
                         el.setHtml('<span class="qfield-text-val" style="display:inline-block;font-family:inherit;font-size:inherit;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">' + CKEDITOR.tools.htmlEncode(displayVal) + '</span>');
-                    } else {
-                        // Outros tipos de campo (select, radio, etc.)
+                    } else if (type === 'textarea') {
+                        // Estilo textarea limpo: bloco amarelo claro uniforme multi-linhas
+                        el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
+                        el.addClass('qfield-textarea-styled');
+                        el.setStyle('display', width === '100%' ? 'block' : 'inline-block');
+                        el.setStyle('background-color', '#ffefbf');
+                        el.setStyle('min-height', height || '60px');
+                        el.setStyle('height', height || '60px');
+                        el.setStyle('line-height', '1.4');
+                        el.setStyle('vertical-align', 'top');
+                        el.setStyle('padding', '6px 8px');
+                        el.setStyle('margin', '4px 0');
+                        el.setStyle('border', 'none');
+                        el.setStyle('cursor', 'pointer');
+
+                        var displayVal = placeholder || label || name;
+                        el.setHtml('<span class="qfield-textarea-val" style="display:block;font-family:inherit;font-size:inherit;color:#111;white-space:pre-wrap;overflow:hidden;">' + CKEDITOR.tools.htmlEncode(displayVal) + '</span>');
+                    } else {
+                        // Outros tipos de campo (select, radio, checkbox)
+                        el.removeClass('qfield-text-styled');
+                        el.removeClass('qfield-textarea-styled');
                         el.addClass('qfield-badge-container');
                         el.setStyle('display', 'inline-flex');
                         el.setStyle('align-items', 'center');
@@ -110,7 +144,6 @@
                         el.setStyle('background-color', '#f8fafc');
 
                         var typeLabels = {
-                            'textarea': 'TEXTAREA',
                             'select': 'SELECT',
                             'checkbox': 'CHECKBOX',
                             'radio': 'RADIO'
