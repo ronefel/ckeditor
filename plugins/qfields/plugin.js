@@ -102,6 +102,7 @@
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
+                        el.removeClass('qfield-checkbox-styled');
                         el.addClass('qfield-text-styled');
 
                         var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
@@ -111,6 +112,7 @@
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-select-styled');
+                        el.removeClass('qfield-checkbox-styled');
                         el.addClass('qfield-textarea-styled');
 
                         if (this.wrapper) {
@@ -124,6 +126,7 @@
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
+                        el.removeClass('qfield-checkbox-styled');
                         el.addClass('qfield-select-styled');
 
                         if (this.wrapper) {
@@ -135,15 +138,31 @@
                             '<span class="qfield-select-val">' + innerHtml + '</span>' +
                             '<span class="qfield-select-arrow">&#9662;</span>'
                         );
-                    } else {
-                        // Outros tipos de campo (radio, checkbox)
+                    } else if (type === 'checkbox') {
+                        // Estilo checkbox limpo: ( X ) com rótulo opcional
+                        el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
+                        el.addClass('qfield-checkbox-styled');
+
+                        if (this.wrapper) {
+                            this.wrapper.setStyle('line-height', 'normal');
+                            this.wrapper.setStyle('display', 'inline-block');
+                        }
+
+                        var labelText = label || placeholder || '';
+                        var labelHtml = labelText ? '<span class="qfield-checkbox-label">' + CKEDITOR.tools.htmlEncode(labelText) + '</span>' : '';
+                        el.setHtml('<span class="qfield-checkbox-box">( X )</span>' + labelHtml);
+                    } else {
+                        // Outros tipos de campo (radio)
+                        el.removeClass('qfield-text-styled');
+                        el.removeClass('qfield-textarea-styled');
+                        el.removeClass('qfield-select-styled');
+                        el.removeClass('qfield-checkbox-styled');
                         el.addClass('qfield-badge-container');
 
                         var typeLabels = {
-                            'checkbox': 'CHECKBOX',
                             'radio': 'RADIO'
                         };
 

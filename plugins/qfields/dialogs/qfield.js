@@ -70,6 +70,9 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                                         } else if (currentType === 'select') {
                                             heightInput.setValue('auto');
                                             if (widthInput && widthInput.getValue() === '100%') widthInput.setValue('200px');
+                                        } else if (currentType === 'checkbox') {
+                                            heightInput.setValue('auto');
+                                            if (widthInput) widthInput.setValue('auto');
                                         }
                                     }
                                 }

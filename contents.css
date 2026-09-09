@@ -299,10 +299,11 @@
 	transition: all 0.2s ease;
 }
 
-/* Aparência específica para campos do tipo TEXTO, TEXTAREA e SELECT (fundo #ffefbf, idêntico ao modelo) */
+/* Aparência específica para campos do tipo TEXTO, TEXTAREA, SELECT e CHECKBOX (fundo #ffefbf, idêntico ao modelo) */
 .document-contents .qfield-widget.qfield-text-styled,
 .document-contents .qfield-widget.qfield-textarea-styled,
-.document-contents .qfield-widget.qfield-select-styled {
+.document-contents .qfield-widget.qfield-select-styled,
+.document-contents .qfield-widget.qfield-checkbox-styled {
 	background-color: #ffefbf;
 	border: none;
 	border-radius: 0;
@@ -385,6 +386,90 @@
 	user-select: none;
 }
 
+/* Campo de Caixa de Seleção (Checkbox) - Formato ( X ) */
+.document-contents .qfield-widget.qfield-checkbox-styled {
+	display: inline-flex;
+	align-items: center;
+	height: auto;
+	padding: 0;
+	margin: 0;
+	vertical-align: middle;
+	cursor: pointer;
+	user-select: none;
+	font-family: inherit;
+	font-size: inherit;
+	line-height: normal;
+}
+
+.document-contents .qfield-widget.qfield-checkbox-styled .qfield-checkbox-box {
+	font-family: inherit;
+	color: #000;
+	white-space: nowrap;
+}
+
+.document-contents .qfield-widget.qfield-checkbox-styled .qfield-checkbox-label {
+	margin-left: 4px;
+	font-family: inherit;
+	font-size: inherit;
+	color: #757575;
+}
+
+/* Checkbox no Formulário de Resposta */
+.document-contents .qform-checkbox-container {
+	display: inline-block;
+	vertical-align: middle;
+	margin: 0;
+}
+
+.document-contents .qform-checkbox-label {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	user-select: none;
+	vertical-align: middle;
+	font-family: inherit;
+	font-size: inherit;
+}
+
+.document-contents .qform-checkbox-input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	margin: 0;
+	pointer-events: none;
+}
+
+.document-contents .qform-checkbox-box {
+	display: inline-block;
+	background-color: #ffefbf;
+	padding: 0;
+	font-family: inherit;
+	color: #000;
+	white-space: nowrap;
+	line-height: normal;
+	vertical-align: middle;
+}
+
+.document-contents .qform-checkbox-mark {
+	display: inline-block;
+	width: 1ch;
+	text-align: center;
+}
+
+.document-contents .qform-checkbox-input:not(:checked)+.qform-checkbox-box .qform-checkbox-mark {
+	visibility: hidden;
+}
+
+.document-contents .qform-checkbox-input:checked+.qform-checkbox-box .qform-checkbox-mark {
+	visibility: visible;
+}
+
+.document-contents .qform-checkbox-text {
+	margin-left: 4px;
+	color: #000;
+}
+
 .document-contents .cke_widget_wrapper {
 	line-height: normal;
 }
@@ -401,21 +486,23 @@
 .document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-textarea-styled,
 .document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-textarea-styled,
 .document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-select-styled,
-.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-select-styled {
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-select-styled,
+.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-checkbox-styled,
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-checkbox-styled {
 	outline: 1px dashed #d97706;
 	border: none;
 	background-color: #fef08a;
 	box-shadow: none;
 }
 
-.document-contents .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled):hover {
+.document-contents .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled):not(.qfield-checkbox-styled):hover {
 	border-color: #3b82f6;
 	background-color: #eff6ff;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled),
-.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled) {
+.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled):not(.qfield-checkbox-styled),
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled):not(.qfield-checkbox-styled) {
 	border-color: #2563eb;
 	border-style: solid;
 	background-color: #dbeafe;

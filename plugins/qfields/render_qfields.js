@@ -91,19 +91,32 @@ var QFieldsRenderer = (function () {
 
                 case 'checkbox':
                     var chkContainer = document.createElement('span');
-                    chkContainer.style.display = 'inline-block';
-                    chkContainer.style.verticalAlign = 'middle';
-                    chkContainer.style.margin = '2px 0';
+                    chkContainer.className = 'qform-checkbox-container';
+
                     var chkLabel = document.createElement('label');
-                    chkLabel.className = checkboxLabelClass;
+                    chkLabel.className = checkboxLabelClass || 'qform-checkbox-label';
+
                     var chk = document.createElement('input');
                     chk.type = 'checkbox';
                     chk.name = name;
                     chk.value = '1';
+                    chk.className = 'qform-checkbox-input';
                     if (isRequired) chk.required = true;
 
+                    var chkBox = document.createElement('span');
+                    chkBox.className = 'qform-checkbox-box';
+                    chkBox.innerHTML = '(&nbsp;<span class="qform-checkbox-mark">X</span>&nbsp;)';
+
                     chkLabel.appendChild(chk);
-                    chkLabel.appendChild(document.createTextNode(label));
+                    chkLabel.appendChild(chkBox);
+
+                    if (label) {
+                        var textSpan = document.createElement('span');
+                        textSpan.className = 'qform-checkbox-text';
+                        textSpan.textContent = ' ' + label;
+                        chkLabel.appendChild(textSpan);
+                    }
+
                     chkContainer.appendChild(chkLabel);
                     targetNode = chkContainer;
                     break;
