@@ -68,7 +68,7 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                                             heightInput.setValue('70px');
                                             if (widthInput) widthInput.setValue('100%');
                                         } else if (currentType === 'select') {
-                                            heightInput.setValue('28px');
+                                            heightInput.setValue('22px');
                                             if (widthInput && widthInput.getValue() === '100%') widthInput.setValue('200px');
                                         }
                                     }

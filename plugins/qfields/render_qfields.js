@@ -98,15 +98,24 @@ var QFieldsRenderer = (function() {
                     select.className = selectClass;
                     select.style.width = width;
                     select.style.maxWidth = '100%';
-                    select.style.height = height || '28px';
+                    select.style.height = height || '22px';
+                    select.style.backgroundColor = '#ffefbf';
+                    select.style.border = 'none';
+                    select.style.outline = 'none';
+                    select.style.fontFamily = 'inherit';
+                    select.style.fontSize = 'inherit';
+                    select.style.color = '#000';
+                    select.style.padding = '0 6px';
                     select.style.boxSizing = 'border-box';
                     select.style.verticalAlign = 'middle';
                     select.style.margin = '0 2px';
+                    select.style.cursor = 'pointer';
                     if (isRequired) select.required = true;
 
-                    select.appendChild(new Option('-- Selecione --', ''));
+                    var defaultOptionText = label || placeholder || '-- Selecione --';
+                    select.appendChild(new Option(defaultOptionText, ''));
 
-                    var optionsList = optionsRaw.split(',');
+                    var optionsList = optionsRaw ? optionsRaw.split(',') : [];
                     optionsList.forEach(function(opt) {
                         var val = opt.trim();
                         if (val) select.appendChild(new Option(val, val));

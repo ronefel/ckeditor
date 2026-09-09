@@ -244,11 +244,22 @@
 	line-height: 21px;
 }
 
-.document-contents input[type="text"] {
+.document-contents input[type="text"],
+.document-contents select {
 	border: 0;
 	background-color: #ffefbf;
-	padding: 2px;
+	padding: 2px 4px;
 	outline: none;
+	font-family: inherit;
+	font-size: inherit;
+	color: #000;
+	box-sizing: border-box;
+}
+
+.document-contents select {
+	height: 22px;
+	vertical-align: middle;
+	cursor: pointer;
 }
 
 /* ==========================================================================
@@ -271,9 +282,10 @@
 	transition: all 0.2s ease;
 }
 
-/* Aparência específica para campos do tipo TEXTO e TEXTAREA (fundo #ffefbf, idêntico ao modelo) */
+/* Aparência específica para campos do tipo TEXTO, TEXTAREA e SELECT (fundo #ffefbf, idêntico ao modelo) */
 .document-contents .qfield-widget.qfield-text-styled,
-.document-contents .qfield-widget.qfield-textarea-styled {
+.document-contents .qfield-widget.qfield-textarea-styled,
+.document-contents .qfield-widget.qfield-select-styled {
 	background-color: #ffefbf !important;
 	border: none !important;
 	border-radius: 0 !important;
@@ -310,6 +322,30 @@
 	white-space: pre-wrap !important;
 }
 
+.document-contents .qfield-widget.qfield-select-styled {
+	display: inline-flex !important;
+	align-items: center !important;
+	padding: 0 6px !important;
+	margin: 0 2px !important;
+	line-height: normal !important;
+	vertical-align: middle !important;
+	cursor: pointer !important;
+}
+
+.document-contents .qfield-widget.qfield-select-styled .qfield-select-val {
+	line-height: normal !important;
+	vertical-align: middle !important;
+	font-family: inherit !important;
+	font-size: inherit !important;
+}
+
+.document-contents .qfield-widget.qfield-select-styled .qfield-select-arrow {
+	font-size: 20px !important;
+	color: #444 !important;
+	margin-left: 4px !important;
+	line-height: 1 !important;
+}
+
 .document-contents .cke_widget_wrapper {
 	line-height: normal !important;
 }
@@ -324,21 +360,23 @@
 .document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-text-styled,
 .document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-text-styled,
 .document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-textarea-styled,
-.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-textarea-styled {
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-textarea-styled,
+.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-select-styled,
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-select-styled {
 	outline: 1px dashed #d97706 !important;
 	border: none !important;
 	background-color: #fef08a !important;
 	box-shadow: none !important;
 }
 
-.document-contents .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):hover {
+.document-contents .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled):hover {
 	border-color: #3b82f6;
 	background-color: #eff6ff;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled),
-.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled) {
+.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled),
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled) {
 	border-color: #2563eb;
 	border-style: solid;
 	background-color: #dbeafe;
