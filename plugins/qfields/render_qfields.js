@@ -123,26 +123,62 @@ var QFieldsRenderer = (function () {
 
                 case 'radio':
                     var radioContainer = document.createElement('span');
-                    radioContainer.style.display = 'inline-block';
-                    radioContainer.style.verticalAlign = 'middle';
-                    radioContainer.style.margin = '2px 0';
-                    var radioOptions = optionsRaw.split(',');
-                    radioOptions.forEach(function (opt) {
-                        var val = opt.trim();
-                        if (val) {
-                            var rLabel = document.createElement('label');
-                            rLabel.className = radioLabelClass;
-                            var radio = document.createElement('input');
-                            radio.type = 'radio';
-                            radio.name = name;
-                            radio.value = val;
-                            if (isRequired) radio.required = true;
+                    radioContainer.className = 'qform-radio-container';
+                    var radioOptions = optionsRaw ? optionsRaw.split(',') : [];
+                    if (radioOptions.length > 0) {
+                        radioOptions.forEach(function (opt) {
+                            var val = opt.trim();
+                            if (val) {
+                                var rLabel = document.createElement('label');
+                                rLabel.className = radioLabelClass || 'qform-radio-label';
 
-                            rLabel.appendChild(radio);
-                            rLabel.appendChild(document.createTextNode(val));
-                            radioContainer.appendChild(rLabel);
+                                var radio = document.createElement('input');
+                                radio.type = 'radio';
+                                radio.name = name;
+                                radio.value = val;
+                                radio.className = 'qform-radio-input';
+                                if (isRequired) radio.required = true;
+
+                                var radioBox = document.createElement('span');
+                                radioBox.className = 'qform-radio-box';
+                                radioBox.innerHTML = '(&nbsp;<span class="qform-radio-mark">X</span>&nbsp;)';
+
+                                var textSpan = document.createElement('span');
+                                textSpan.className = 'qform-radio-text';
+                                textSpan.textContent = val;
+
+                                rLabel.appendChild(radio);
+                                rLabel.appendChild(radioBox);
+                                rLabel.appendChild(textSpan);
+                                radioContainer.appendChild(rLabel);
+                            }
+                        });
+                    } else {
+                        var rLabel = document.createElement('label');
+                        rLabel.className = radioLabelClass || 'qform-radio-label';
+
+                        var radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = name;
+                        radio.value = label || name || '1';
+                        radio.className = 'qform-radio-input';
+                        if (isRequired) radio.required = true;
+
+                        var radioBox = document.createElement('span');
+                        radioBox.className = 'qform-radio-box';
+                        radioBox.innerHTML = '(&nbsp;<span class="qform-radio-mark">X</span>&nbsp;)';
+
+                        rLabel.appendChild(radio);
+                        rLabel.appendChild(radioBox);
+
+                        if (label) {
+                            var textSpan = document.createElement('span');
+                            textSpan.className = 'qform-radio-text';
+                            textSpan.textContent = label;
+                            rLabel.appendChild(textSpan);
                         }
-                    });
+                        radioContainer.appendChild(rLabel);
+                    }
                     targetNode = radioContainer;
                     break;
             }

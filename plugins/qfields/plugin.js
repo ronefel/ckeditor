@@ -36,8 +36,8 @@
                     var type = el.getAttribute('data-qfield-type') || 'text';
                     var name = el.getAttribute('data-qfield-name') || 'campo';
                     var label = el.hasAttribute('data-qfield-label') ? el.getAttribute('data-qfield-label') : '';
-                    var width = el.getAttribute('data-qfield-width') || '200px';
-                    var height = el.getAttribute('data-qfield-height') || ((type === 'text' || type === 'select') ? '22px' : (type === 'textarea' ? '60px' : '32px'));
+                    var width = el.getAttribute('data-qfield-width') || ((type === 'checkbox' || type === 'radio') ? 'auto' : '200px');
+                    var height = el.getAttribute('data-qfield-height') || ((type === 'text' || type === 'select') ? '22px' : (type === 'textarea' ? '60px' : 'auto'));
                     var required = el.getAttribute('data-qfield-required') === 'true';
                     var placeholder = el.getAttribute('data-qfield-placeholder') || '';
                     var options = el.getAttribute('data-qfield-options') || '';
@@ -103,6 +103,7 @@
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
+                        el.removeClass('qfield-radio-styled');
                         el.addClass('qfield-text-styled');
 
                         var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
@@ -113,6 +114,7 @@
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
+                        el.removeClass('qfield-radio-styled');
                         el.addClass('qfield-textarea-styled');
 
                         if (this.wrapper) {
@@ -127,6 +129,7 @@
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-checkbox-styled');
+                        el.removeClass('qfield-radio-styled');
                         el.addClass('qfield-select-styled');
 
                         if (this.wrapper) {
@@ -144,6 +147,7 @@
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
+                        el.removeClass('qfield-radio-styled');
                         el.addClass('qfield-checkbox-styled');
 
                         if (this.wrapper) {
@@ -154,20 +158,50 @@
                         var labelText = label || placeholder || '';
                         var labelHtml = labelText ? '<span class="qfield-checkbox-label">' + CKEDITOR.tools.htmlEncode(labelText) + '</span>' : '';
                         el.setHtml('<span class="qfield-checkbox-box">( X )</span>' + labelHtml);
-                    } else {
-                        // Outros tipos de campo (radio)
+                    } else if (type === 'radio') {
+                        // Estilo radio limpo: ( X ) com opções ou rótulo
+                        el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
+                        el.addClass('qfield-radio-styled');
+
+                        if (this.wrapper) {
+                            this.wrapper.setStyle('line-height', 'normal');
+                            this.wrapper.setStyle('display', 'inline-block');
+                        }
+
+                        var radioOptions = options ? options.split(',') : [];
+                        var radioHtml = '';
+
+                        if (radioOptions.length > 0) {
+                            radioHtml = radioOptions.map(function (opt, idx) {
+                                var val = opt.trim();
+                                if (!val) return '';
+                                var mark = (idx === 0) ? 'X' : '&nbsp;';
+                                return '<span class="qfield-radio-item"><span class="qfield-radio-box">(&nbsp;<span class="qfield-radio-mark">' + mark + '</span>&nbsp;)</span><span class="qfield-radio-label">' + CKEDITOR.tools.htmlEncode(val) + '</span></span>';
+                            }).filter(Boolean).join('');
+                        }
+
+                        if (!radioHtml) {
+                            var labelText = label || placeholder || '';
+                            var labelHtml = labelText ? '<span class="qfield-radio-label">' + CKEDITOR.tools.htmlEncode(labelText) + '</span>' : '';
+                            radioHtml = '<span class="qfield-radio-item"><span class="qfield-radio-box">(&nbsp;<span class="qfield-radio-mark">X</span>&nbsp;)</span>' + labelHtml + '</span>';
+                        }
+
+                        el.setHtml(radioHtml);
+                    } else {
+                        // Outros tipos de campo
+                        el.removeClass('qfield-text-styled');
+                        el.removeClass('qfield-textarea-styled');
+                        el.removeClass('qfield-select-styled');
+                        el.removeClass('qfield-checkbox-styled');
+                        el.removeClass('qfield-radio-styled');
                         el.addClass('qfield-badge-container');
 
-                        var typeLabels = {
-                            'radio': 'RADIO'
-                        };
-
                         var reqBadge = required ? '<span class="qfield-badge-req" title="Obrigatório">*</span>' : '';
-                        var typeStr = typeLabels[type] || type.toUpperCase();
+                        var typeStr = type.toUpperCase();
                         var previewText = label + (name !== label ? ' (' + name + ')' : '');
 
                         var badgeHtml =
