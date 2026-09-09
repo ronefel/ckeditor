@@ -5,7 +5,7 @@
  *   const htmlFormulario = QFieldsRenderer.render(htmlSalvoDoCKEditor);
  *   document.getElementById('meuContainer').innerHTML = htmlFormulario;
  */
-var QFieldsRenderer = (function() {
+var QFieldsRenderer = (function () {
     'use strict';
 
     /**
@@ -30,10 +30,10 @@ var QFieldsRenderer = (function() {
         // 1. Processa campos criados com o plugin qfields (.qfield-widget)
         var camposWidget = wrapper.querySelectorAll('.qfield-widget');
 
-        camposWidget.forEach(function(campo) {
+        camposWidget.forEach(function (campo) {
             var type = campo.getAttribute('data-qfield-type') || 'text';
             var name = campo.getAttribute('data-qfield-name') || 'campo';
-            var label = campo.getAttribute('data-qfield-label') || name;
+            var label = campo.getAttribute('data-qfield-label') || '';
             var width = campo.getAttribute('data-qfield-width') || 'auto';
             var height = campo.getAttribute('data-qfield-height') || 'auto';
             var isRequired = campo.getAttribute('data-qfield-required') === 'true';
@@ -48,19 +48,8 @@ var QFieldsRenderer = (function() {
                     input.type = 'text';
                     input.name = name;
                     input.className = textClass;
-                    input.style.width = width;
-                    input.style.maxWidth = '100%';
-                    input.style.height = height || '22px';
-                    input.style.backgroundColor = '#ffefbf';
-                    input.style.border = 'none';
-                    input.style.outline = 'none';
-                    input.style.fontFamily = 'inherit';
-                    input.style.fontSize = 'inherit';
-                    input.style.color = '#000';
-                    input.style.padding = '0 6px';
-                    input.style.boxSizing = 'border-box';
-                    input.style.verticalAlign = 'middle';
-                    input.style.margin = '0 2px';
+                    if (width) input.style.width = width;
+                    if (height && height !== '22px') input.style.height = height;
                     if (placeholder) input.placeholder = placeholder;
                     if (isRequired) input.required = true;
                     targetNode = input;
@@ -70,23 +59,11 @@ var QFieldsRenderer = (function() {
                     var textarea = document.createElement('textarea');
                     textarea.name = name;
                     textarea.className = textareaClass;
-                    textarea.style.width = width || '100%';
-                    textarea.style.maxWidth = '100%';
-                    textarea.style.height = height || '60px';
-                    textarea.style.minHeight = height || '60px';
-                    textarea.style.backgroundColor = '#ffefbf';
-                    textarea.style.border = 'none';
-                    textarea.style.outline = 'none';
-                    textarea.style.fontFamily = 'inherit';
-                    textarea.style.fontSize = 'inherit';
-                    textarea.style.color = '#000';
-                    textarea.style.padding = '6px 8px';
-                    textarea.style.boxSizing = 'border-box';
-                    textarea.style.verticalAlign = 'top';
-                    textarea.style.margin = '4px 0';
-                    textarea.style.resize = 'vertical';
-                    textarea.style.display = (width === '100%') ? 'block' : 'inline-block';
-                    textarea.style.lineHeight = '1.4';
+                    if (width) textarea.style.width = width;
+                    if (height) {
+                        textarea.style.height = height;
+                        textarea.style.minHeight = height;
+                    }
                     if (placeholder) textarea.placeholder = placeholder;
                     if (isRequired) textarea.required = true;
                     targetNode = textarea;
@@ -96,27 +73,15 @@ var QFieldsRenderer = (function() {
                     var select = document.createElement('select');
                     select.name = name;
                     select.className = selectClass;
-                    select.style.width = width;
-                    select.style.maxWidth = '100%';
-                    select.style.height = height || '22px';
-                    select.style.backgroundColor = '#ffefbf';
-                    select.style.border = 'none';
-                    select.style.outline = 'none';
-                    select.style.fontFamily = 'inherit';
-                    select.style.fontSize = 'inherit';
-                    select.style.color = '#000';
-                    select.style.padding = '0 6px';
-                    select.style.boxSizing = 'border-box';
-                    select.style.verticalAlign = 'middle';
-                    select.style.margin = '0 2px';
-                    select.style.cursor = 'pointer';
+                    if (width) select.style.width = width;
+                    if (height && height !== '22px') select.style.height = height;
                     if (isRequired) select.required = true;
 
-                    var defaultOptionText = label || placeholder || '-- Selecione --';
+                    var defaultOptionText = label || placeholder || '';
                     select.appendChild(new Option(defaultOptionText, ''));
 
                     var optionsList = optionsRaw ? optionsRaw.split(',') : [];
-                    optionsList.forEach(function(opt) {
+                    optionsList.forEach(function (opt) {
                         var val = opt.trim();
                         if (val) select.appendChild(new Option(val, val));
                     });
@@ -149,7 +114,7 @@ var QFieldsRenderer = (function() {
                     radioContainer.style.verticalAlign = 'middle';
                     radioContainer.style.margin = '2px 0';
                     var radioOptions = optionsRaw.split(',');
-                    radioOptions.forEach(function(opt) {
+                    radioOptions.forEach(function (opt) {
                         var val = opt.trim();
                         if (val) {
                             var rLabel = document.createElement('label');
@@ -176,7 +141,7 @@ var QFieldsRenderer = (function() {
 
         // 2. Garante que inputs HTML que por ventura já estejam no template também recebam estilos
         var inputsNativos = wrapper.querySelectorAll('input:not([class]), select:not([class]), textarea:not([class])');
-        inputsNativos.forEach(function(inputEl) {
+        inputsNativos.forEach(function (inputEl) {
             var tag = inputEl.tagName.toLowerCase();
             if (tag === 'textarea') {
                 inputEl.className = textareaClass;

@@ -21,7 +21,7 @@
                 allowedContent: true,
 
                 template:
-                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="22px" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="">' +
+                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="">' +
                     '<span class="qfield-text-val">campo</span>' +
                     '</span>',
 
@@ -63,6 +63,7 @@
                     var required = !!this.data.required;
                     var placeholder = this.data.placeholder || '';
                     var options = this.data.options || '';
+                    var displayVal = label || placeholder || name || '';
 
                     // Normaliza unidades de tamanho (se usuário digitou apenas número, assume px)
                     if (width && !isNaN(width)) width += 'px';
@@ -78,12 +79,11 @@
                     el.setAttribute('data-qfield-placeholder', placeholder);
                     el.setAttribute('data-qfield-options', options);
 
-                    // Estiliza o widget no editor para refletir dimensões reais
-                    el.setStyle('box-sizing', 'border-box');
-                    el.setStyle('width', width);
-                    el.setStyle('max-width', '100%');
+                    // Mantém inline apenas as dimensões personalizadas pelo usuário
+                    if (width) el.setStyle('width', width);
+                    if (height) el.setStyle('height', height);
 
-                    // Aplica dimensões e exibição no wrapper do widget para garantir que o CKEditor respeite a largura
+                    // Aplica dimensões no wrapper em tempo de execução (não afeta o HTML salvo)
                     if (this.wrapper) {
                         this.wrapper.setStyle('box-sizing', 'border-box');
                         this.wrapper.setStyle('max-width', '100%');
@@ -103,73 +103,37 @@
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
                         el.addClass('qfield-text-styled');
-                        el.setStyle('display', 'inline-block');
-                        el.setStyle('background-color', '#ffefbf');
-                        el.setStyle('min-height', height || '22px');
-                        el.setStyle('height', height || '22px');
-                        el.setStyle('line-height', height || '22px');
-                        el.setStyle('vertical-align', 'middle');
-                        el.setStyle('padding', '0 6px');
-                        el.setStyle('margin', '0 2px');
-                        el.setStyle('border', 'none');
-                        el.setStyle('cursor', 'pointer');
 
-                        var displayVal = label || placeholder || '';
                         var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
-                        el.setHtml('<span class="qfield-text-val" style="display:inline-block;font-family:inherit;font-size:inherit;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">' + innerHtml + '</span>');
+                        el.setHtml('<span class="qfield-text-val">' + innerHtml + '</span>');
                     } else if (type === 'textarea') {
                         // Estilo textarea limpo: bloco amarelo claro uniforme multi-linhas
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-select-styled');
                         el.addClass('qfield-textarea-styled');
-                        el.setStyle('display', width === '100%' ? 'block' : 'inline-block');
-                        el.setStyle('background-color', '#ffefbf');
-                        el.setStyle('min-height', height || '60px');
-                        el.setStyle('height', height || '60px');
-                        el.setStyle('line-height', '1.4');
-                        el.setStyle('vertical-align', 'top');
-                        el.setStyle('padding', '6px 8px');
-                        el.setStyle('margin', '4px 0');
-                        el.setStyle('border', 'none');
-                        el.setStyle('cursor', 'pointer');
-                        el.setStyle('box-sizing', 'border-box');
 
                         if (this.wrapper) {
                             this.wrapper.setStyle('line-height', 'normal');
                         }
 
-                        var displayVal = label || placeholder || '';
                         var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
-                        el.setHtml('<span class="qfield-textarea-val" style="display:block;font-family:inherit;font-size:inherit;color:#111;line-height:1.4;white-space:pre-wrap;overflow:hidden;">' + innerHtml + '</span>');
+                        el.setHtml('<span class="qfield-textarea-val">' + innerHtml + '</span>');
                     } else if (type === 'select') {
                         // Estilo select limpo: retângulo amarelo claro uniforme com seta discreta
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
                         el.addClass('qfield-select-styled');
-                        el.setStyle('display', 'inline-flex');
-                        el.setStyle('align-items', 'center');
-                        el.setStyle('background-color', '#ffefbf');
-                        el.setStyle('min-height', height || '22px');
-                        el.setStyle('height', height || '22px');
-                        el.setStyle('line-height', height || '22px');
-                        el.setStyle('vertical-align', 'middle');
-                        el.setStyle('padding', '0 6px');
-                        el.setStyle('margin', '0 2px');
-                        el.setStyle('border', 'none');
-                        el.setStyle('cursor', 'pointer');
-                        el.setStyle('box-sizing', 'border-box');
 
                         if (this.wrapper) {
                             this.wrapper.setStyle('line-height', 'normal');
                         }
 
-                        var displayVal = label || placeholder || (options ? options.split(',')[0].trim() : '') || '';
                         var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
                         el.setHtml(
-                            '<span class="qfield-select-val" style="display:inline-block;font-family:inherit;font-size:inherit;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 14px);flex:1;">' + innerHtml + '</span>' +
-                            '<span class="qfield-select-arrow" style="font-size:9px;color:#444;margin-left:4px;user-select:none;line-height:1;">&#9662;</span>'
+                            '<span class="qfield-select-val">' + innerHtml + '</span>' +
+                            '<span class="qfield-select-arrow">&#9662;</span>'
                         );
                     } else {
                         // Outros tipos de campo (radio, checkbox)
@@ -177,10 +141,6 @@
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
                         el.addClass('qfield-badge-container');
-                        el.setStyle('display', 'inline-flex');
-                        el.setStyle('align-items', 'center');
-                        el.setStyle('min-height', height);
-                        el.setStyle('background-color', '#f8fafc');
 
                         var typeLabels = {
                             'checkbox': 'CHECKBOX',

@@ -62,13 +62,13 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
 
                                     if (heightInput) {
                                         if (currentType === 'text') {
-                                            heightInput.setValue('22px');
+                                            heightInput.setValue('auto');
                                             if (widthInput && widthInput.getValue() === '100%') widthInput.setValue('200px');
                                         } else if (currentType === 'textarea') {
                                             heightInput.setValue('70px');
                                             if (widthInput) widthInput.setValue('100%');
                                         } else if (currentType === 'select') {
-                                            heightInput.setValue('22px');
+                                            heightInput.setValue('auto');
                                             if (widthInput && widthInput.getValue() === '100%') widthInput.setValue('200px');
                                         }
                                     }
