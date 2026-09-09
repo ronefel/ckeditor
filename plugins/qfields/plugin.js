@@ -2,14 +2,14 @@
  * Plugin qfields para CKEditor 4
  * Permite a inserção de campos/variáveis para montagem de questionários e formulários.
  */
-(function() {
+(function () {
     'use strict';
 
     CKEDITOR.plugins.add('qfields', {
         requires: 'widget,dialog',
         icons: 'qfield',
 
-        init: function(editor) {
+        init: function (editor) {
             // Registra o diálogo de configuração
             CKEDITOR.dialog.add('qfieldDialog', this.path + 'dialogs/qfield.js');
 
@@ -22,21 +22,21 @@
 
                 template:
                     '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="22px" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="">' +
-                        '<span class="qfield-text-val">campo</span>' +
+                    '<span class="qfield-text-val">campo</span>' +
                     '</span>',
 
                 // Upcast: Identifica o elemento no HTML ao carregar ou voltar do Código-Fonte
-                upcast: function(element) {
+                upcast: function (element) {
                     return element.name === 'span' && element.hasClass('qfield-widget');
                 },
 
                 // Inicializa os dados do Widget a partir dos atributos data-*
-                init: function() {
+                init: function () {
                     var el = this.element;
                     var type = el.getAttribute('data-qfield-type') || 'text';
                     var name = el.getAttribute('data-qfield-name') || 'campo';
                     var label = el.hasAttribute('data-qfield-label') ? el.getAttribute('data-qfield-label') : '';
-                    var width = el.getAttribute('data-qfield-width') || (type === 'text' ? '200px' : '220px');
+                    var width = el.getAttribute('data-qfield-width') || '200px';
                     var height = el.getAttribute('data-qfield-height') || (type === 'text' ? '22px' : '32px');
                     var required = el.getAttribute('data-qfield-required') === 'true';
                     var placeholder = el.getAttribute('data-qfield-placeholder') || '';
@@ -53,12 +53,12 @@
                 },
 
                 // Atualiza a visualização e atributos sempre que os dados mudam
-                data: function() {
+                data: function () {
                     var el = this.element;
                     var type = this.data.type || 'text';
                     var name = this.data.name || 'campo';
                     var label = this.data.label !== undefined ? this.data.label : '';
-                    var width = this.data.width || '220px';
+                    var width = this.data.width || '200px';
                     var height = this.data.height || '32px';
                     var required = !!this.data.required;
                     var placeholder = this.data.placeholder || '';
@@ -98,7 +98,7 @@
                     }
 
                     if (type === 'text') {
-                        // Estilo limpo idêntico à imagem de referência: retângulo amarelo claro uniforme
+                        // Estilo limpo: retângulo amarelo claro uniforme
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-textarea-styled');
                         el.addClass('qfield-text-styled');
@@ -160,11 +160,11 @@
                         var typeStr = typeLabels[type] || type.toUpperCase();
                         var previewText = label + (name !== label ? ' (' + name + ')' : '');
 
-                        var badgeHtml = 
+                        var badgeHtml =
                             '<span class="qfield-badge qfield-type-' + type + '">' +
-                                '<span class="qfield-badge-type">' + typeStr + '</span>' +
-                                '<span class="qfield-badge-name">' + CKEDITOR.tools.htmlEncode(previewText) + '</span>' +
-                                reqBadge +
+                            '<span class="qfield-badge-type">' + typeStr + '</span>' +
+                            '<span class="qfield-badge-name">' + CKEDITOR.tools.htmlEncode(previewText) + '</span>' +
+                            reqBadge +
                             '</span>';
 
                         el.setHtml(badgeHtml);
@@ -172,18 +172,18 @@
                 }
             });
             // Garante que o comando do widget permaneça habilitado
-            editor.on('instanceReady', function() {
+            editor.on('instanceReady', function () {
                 var cmd = editor.getCommand('qfield');
                 if (cmd) cmd.enable();
             });
-            editor.on('selectionChange', function() {
+            editor.on('selectionChange', function () {
                 var cmd = editor.getCommand('qfield');
                 if (cmd && cmd.state === CKEDITOR.TRISTATE_DISABLED && !editor.readOnly) {
                     cmd.enable();
                 }
             });
             // Força a reativação dos widgets ao voltar do modo Código-Fonte
-            editor.on('mode', function() {
+            editor.on('mode', function () {
                 if (editor.mode === 'wysiwyg' && editor.widgets) {
                     editor.widgets.checkWidgets();
                 }
@@ -198,7 +198,7 @@
                     group: 'qfieldGroup'
                 });
 
-                editor.contextMenu.addListener(function(element) {
+                editor.contextMenu.addListener(function (element) {
                     var widget = editor.widgets.getByElement(element);
                     if (widget && widget.name === 'qfield') {
                         return { qfieldItem: CKEDITOR.TRISTATE_OFF };
