@@ -114,6 +114,20 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                         commit: function (widget) {
                             widget.setData('required', this.getValue());
                         }
+                    },
+                    {
+                        id: 'defaultChecked',
+                        type: 'checkbox',
+                        label: 'Marcado inicialmente por padrão (para Checkbox)',
+                        'default': false,
+                        setup: function (widget) {
+                            this.setValue(widget.data.defaultValue === 'true' || widget.data.defaultValue === '1');
+                        },
+                        commit: function (widget) {
+                            if (widget.data.type === 'checkbox') {
+                                widget.setData('defaultValue', this.getValue() ? 'true' : 'false');
+                            }
+                        }
                     }
                 ]
             },
@@ -161,13 +175,19 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                         rows: 4,
                         label: 'Opções (para Select e Radio)',
                         'default': '',
-                        note: 'Informe as opções separadas por vírgula (ex: Opção 1, Opção 2, Opção 3)',
                         setup: function (widget) {
                             this.setValue(widget.data.options || '');
                         },
                         commit: function (widget) {
                             widget.setData('options', this.getValue());
                         }
+                    },
+                    {
+                        type: 'html',
+                        html: '<div style="font-size: 12px; color: #475569; margin-top: 4px; line-height: 1.4; white-space: normal; background: #f8fafc; padding: 6px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">' +
+                            '💡 Separe as opções por vírgula (ex: <code>Opção 1, *Opção 2, Opção 3</code>).<br>' +
+                            'Coloque um asterisco (<code>*</code>) antes da opção para marcá-la como <strong>padrão</strong>.' +
+                            '</div>'
                     }
                 ]
             }

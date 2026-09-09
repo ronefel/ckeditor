@@ -408,6 +408,12 @@
 	white-space: nowrap;
 }
 
+.document-contents .qfield-widget.qfield-checkbox-styled .qfield-checkbox-mark {
+	display: inline-block;
+	width: 1ch;
+	text-align: center;
+}
+
 .document-contents .qfield-widget.qfield-checkbox-styled .qfield-checkbox-label {
 	margin-left: 4px;
 	font-family: inherit;

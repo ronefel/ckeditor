@@ -39,6 +39,7 @@ var QFieldsRenderer = (function () {
             var isRequired = campo.getAttribute('data-qfield-required') === 'true';
             var placeholder = campo.getAttribute('data-qfield-placeholder') || '';
             var optionsRaw = campo.getAttribute('data-qfield-options') || '';
+            var defaultValue = campo.getAttribute('data-qfield-default') || '';
 
             var targetNode = null;
 
@@ -77,13 +78,34 @@ var QFieldsRenderer = (function () {
                     if (height && height !== '22px') select.style.height = height;
                     if (isRequired) select.required = true;
 
-                    var defaultOptionText = label || placeholder || '';
-                    select.appendChild(new Option(defaultOptionText, ''));
+                    var defaultOptionText = label || placeholder || 'Selecione...';
+                    var placeholderOption = new Option(defaultOptionText, '');
+                    select.appendChild(placeholderOption);
 
                     var optionsList = optionsRaw ? optionsRaw.split(',') : [];
+                    var effectiveSelectDefault = '';
+                    if (optionsList.length > 0) {
+                        optionsList.forEach(function (opt) {
+                            var trimmed = opt.trim();
+                            if (trimmed.indexOf('*') === 0) {
+                                effectiveSelectDefault = trimmed.replace(/^\*/, '').trim();
+                            }
+                        });
+                    }
+                    if (!effectiveSelectDefault && defaultValue && defaultValue !== 'true' && defaultValue !== 'false') {
+                        effectiveSelectDefault = defaultValue;
+                    }
+
                     optionsList.forEach(function (opt) {
-                        var val = opt.trim();
-                        if (val) select.appendChild(new Option(val, val));
+                        var val = opt.trim().replace(/^\*/, '').trim();
+                        if (val) {
+                            var optElem = new Option(val, val);
+                            if (effectiveSelectDefault && val.toLowerCase() === effectiveSelectDefault.toLowerCase()) {
+                                optElem.selected = true;
+                                optElem.setAttribute('selected', 'selected');
+                            }
+                            select.appendChild(optElem);
+                        }
                     });
 
                     targetNode = select;
@@ -102,6 +124,11 @@ var QFieldsRenderer = (function () {
                     chk.value = '1';
                     chk.className = 'qform-checkbox-input';
                     if (isRequired) chk.required = true;
+                    var isChecked = defaultValue === 'true' || defaultValue === '1' || defaultValue === 'checked';
+                    if (isChecked) {
+                        chk.checked = true;
+                        chk.setAttribute('checked', 'checked');
+                    }
 
                     var chkBox = document.createElement('span');
                     chkBox.className = 'qform-checkbox-box';
@@ -125,9 +152,22 @@ var QFieldsRenderer = (function () {
                     var radioContainer = document.createElement('span');
                     radioContainer.className = 'qform-radio-container';
                     var radioOptions = optionsRaw ? optionsRaw.split(',') : [];
+                    var effectiveRadioDefault = '';
                     if (radioOptions.length > 0) {
                         radioOptions.forEach(function (opt) {
-                            var val = opt.trim();
+                            var trimmed = opt.trim();
+                            if (trimmed.indexOf('*') === 0) {
+                                effectiveRadioDefault = trimmed.replace(/^\*/, '').trim();
+                            }
+                        });
+                    }
+                    if (!effectiveRadioDefault && defaultValue && defaultValue !== 'true' && defaultValue !== 'false') {
+                        effectiveRadioDefault = defaultValue;
+                    }
+
+                    if (radioOptions.length > 0) {
+                        radioOptions.forEach(function (opt) {
+                            var val = opt.trim().replace(/^\*/, '').trim();
                             if (val) {
                                 var rLabel = document.createElement('label');
                                 rLabel.className = radioLabelClass || 'qform-radio-label';
@@ -138,6 +178,10 @@ var QFieldsRenderer = (function () {
                                 radio.value = val;
                                 radio.className = 'qform-radio-input';
                                 if (isRequired) radio.required = true;
+                                if (effectiveRadioDefault && val.toLowerCase() === effectiveRadioDefault.toLowerCase()) {
+                                    radio.checked = true;
+                                    radio.setAttribute('checked', 'checked');
+                                }
 
                                 var radioBox = document.createElement('span');
                                 radioBox.className = 'qform-radio-box';
@@ -160,9 +204,14 @@ var QFieldsRenderer = (function () {
                         var radio = document.createElement('input');
                         radio.type = 'radio';
                         radio.name = name;
-                        radio.value = label || name || '1';
+                        var radioVal = label || name || '1';
+                        radio.value = radioVal;
                         radio.className = 'qform-radio-input';
                         if (isRequired) radio.required = true;
+                        if (defaultValue === 'true' || defaultValue === '1' || (defaultValue && defaultValue.toLowerCase() === radioVal.toLowerCase())) {
+                            radio.checked = true;
+                            radio.setAttribute('checked', 'checked');
+                        }
 
                         var radioBox = document.createElement('span');
                         radioBox.className = 'qform-radio-box';

@@ -21,7 +21,7 @@
                 allowedContent: true,
 
                 template:
-                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="">' +
+                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="" data-qfield-default="">' +
                     '<span class="qfield-text-val">campo</span>' +
                     '</span>',
 
@@ -41,6 +41,7 @@
                     var required = el.getAttribute('data-qfield-required') === 'true';
                     var placeholder = el.getAttribute('data-qfield-placeholder') || '';
                     var options = el.getAttribute('data-qfield-options') || '';
+                    var defaultValue = el.getAttribute('data-qfield-default') || '';
 
                     this.setData('type', type);
                     this.setData('name', name);
@@ -50,6 +51,7 @@
                     this.setData('required', required);
                     this.setData('placeholder', placeholder);
                     this.setData('options', options);
+                    this.setData('defaultValue', defaultValue);
                 },
 
                 // Atualiza a visualização e atributos sempre que os dados mudam
@@ -63,6 +65,7 @@
                     var required = !!this.data.required;
                     var placeholder = this.data.placeholder || '';
                     var options = this.data.options || '';
+                    var defaultValue = this.data.defaultValue !== undefined ? this.data.defaultValue : '';
                     var displayVal = label || placeholder || name || '';
 
                     // Normaliza unidades de tamanho (se usuário digitou apenas número, assume px)
@@ -78,6 +81,7 @@
                     el.setAttribute('data-qfield-required', required ? 'true' : 'false');
                     el.setAttribute('data-qfield-placeholder', placeholder);
                     el.setAttribute('data-qfield-options', options);
+                    el.setAttribute('data-qfield-default', defaultValue);
 
                     // Mantém inline apenas as dimensões personalizadas pelo usuário
                     if (width) el.setStyle('width', width);
@@ -136,13 +140,28 @@
                             this.wrapper.setStyle('line-height', 'normal');
                         }
 
-                        var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
+                        var selectOptions = options ? options.split(',') : [];
+                        var effectiveDefault = '';
+                        if (selectOptions.length > 0) {
+                            selectOptions.forEach(function (opt) {
+                                var trimmed = opt.trim();
+                                if (trimmed.indexOf('*') === 0) {
+                                    effectiveDefault = trimmed.replace(/^\*/, '').trim();
+                                }
+                            });
+                        }
+                        if (!effectiveDefault && defaultValue && defaultValue !== 'true' && defaultValue !== 'false') {
+                            effectiveDefault = defaultValue;
+                        }
+
+                        var selectDisplayVal = effectiveDefault || displayVal;
+                        var innerHtml = selectDisplayVal ? CKEDITOR.tools.htmlEncode(selectDisplayVal) : '&nbsp;';
                         el.setHtml(
                             '<span class="qfield-select-val">' + innerHtml + '</span>' +
                             '<span class="qfield-select-arrow">&#9662;</span>'
                         );
                     } else if (type === 'checkbox') {
-                        // Estilo checkbox limpo: ( X ) com rótulo opcional
+                        // Estilo checkbox limpo: ( X ) ou (   ) com rótulo opcional
                         el.removeClass('qfield-badge-container');
                         el.removeClass('qfield-text-styled');
                         el.removeClass('qfield-textarea-styled');
@@ -155,9 +174,11 @@
                             this.wrapper.setStyle('display', 'inline-block');
                         }
 
+                        var isChecked = defaultValue === 'true' || defaultValue === '1' || defaultValue === 'checked';
+                        var mark = isChecked ? 'X' : '&nbsp;';
                         var labelText = label || placeholder || '';
                         var labelHtml = labelText ? '<span class="qfield-checkbox-label">' + CKEDITOR.tools.htmlEncode(labelText) + '</span>' : '';
-                        el.setHtml('<span class="qfield-checkbox-box">( X )</span>' + labelHtml);
+                        el.setHtml('<span class="qfield-checkbox-box">(&nbsp;<span class="qfield-checkbox-mark">' + mark + '</span>&nbsp;)</span>' + labelHtml);
                     } else if (type === 'radio') {
                         // Estilo radio limpo: ( X ) com opções ou rótulo
                         el.removeClass('qfield-badge-container');
@@ -173,21 +194,37 @@
                         }
 
                         var radioOptions = options ? options.split(',') : [];
+                        var effectiveDefault = '';
+                        if (radioOptions.length > 0) {
+                            radioOptions.forEach(function (opt) {
+                                var trimmed = opt.trim();
+                                if (trimmed.indexOf('*') === 0) {
+                                    effectiveDefault = trimmed.replace(/^\*/, '').trim();
+                                }
+                            });
+                        }
+                        if (!effectiveDefault && defaultValue && defaultValue !== 'true' && defaultValue !== 'false') {
+                            effectiveDefault = defaultValue;
+                        }
+
                         var radioHtml = '';
 
                         if (radioOptions.length > 0) {
-                            radioHtml = radioOptions.map(function (opt, idx) {
-                                var val = opt.trim();
-                                if (!val) return '';
-                                var mark = (idx === 0) ? 'X' : '&nbsp;';
-                                return '<span class="qfield-radio-item"><span class="qfield-radio-box">(&nbsp;<span class="qfield-radio-mark">' + mark + '</span>&nbsp;)</span><span class="qfield-radio-label">' + CKEDITOR.tools.htmlEncode(val) + '</span></span>';
+                            radioHtml = radioOptions.map(function (opt) {
+                                var cleanVal = opt.trim().replace(/^\*/, '').trim();
+                                if (!cleanVal) return '';
+                                var isSelected = effectiveDefault && (cleanVal.toLowerCase() === effectiveDefault.toLowerCase());
+                                var mark = isSelected ? 'X' : '&nbsp;';
+                                return '<span class="qfield-radio-item"><span class="qfield-radio-box">(&nbsp;<span class="qfield-radio-mark">' + mark + '</span>&nbsp;)</span><span class="qfield-radio-label">' + CKEDITOR.tools.htmlEncode(cleanVal) + '</span></span>';
                             }).filter(Boolean).join('');
                         }
 
                         if (!radioHtml) {
+                            var isChecked = defaultValue === 'true' || defaultValue === '1' || (defaultValue && defaultValue.toLowerCase() === (label || name).toLowerCase());
+                            var mark = isChecked ? 'X' : '&nbsp;';
                             var labelText = label || placeholder || '';
                             var labelHtml = labelText ? '<span class="qfield-radio-label">' + CKEDITOR.tools.htmlEncode(labelText) + '</span>' : '';
-                            radioHtml = '<span class="qfield-radio-item"><span class="qfield-radio-box">(&nbsp;<span class="qfield-radio-mark">X</span>&nbsp;)</span>' + labelHtml + '</span>';
+                            radioHtml = '<span class="qfield-radio-item"><span class="qfield-radio-box">(&nbsp;<span class="qfield-radio-mark">' + mark + '</span>&nbsp;)</span>' + labelHtml + '</span>';
                         }
 
                         el.setHtml(radioHtml);
