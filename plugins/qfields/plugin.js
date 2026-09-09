@@ -15,13 +15,13 @@
 
             // Registra o Widget
             editor.widgets.add('qfield', {
-                button: 'Inserir Campo do Questionário',
+                button: 'Inserir Campo',
                 dialog: 'qfieldDialog',
                 inline: true,
                 allowedContent: true,
 
                 template:
-                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="" data-qfield-default="">' +
+                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="" data-qfield-default="" data-qfield-mask="">' +
                     '<span class="qfield-text-val">campo</span>' +
                     '</span>',
 
@@ -42,6 +42,7 @@
                     var placeholder = el.getAttribute('data-qfield-placeholder') || '';
                     var options = el.getAttribute('data-qfield-options') || '';
                     var defaultValue = el.getAttribute('data-qfield-default') || '';
+                    var mask = el.getAttribute('data-qfield-mask') || '';
 
                     this.setData('type', type);
                     this.setData('name', name);
@@ -52,6 +53,7 @@
                     this.setData('placeholder', placeholder);
                     this.setData('options', options);
                     this.setData('defaultValue', defaultValue);
+                    this.setData('mask', mask);
                 },
 
                 // Atualiza a visualização e atributos sempre que os dados mudam
@@ -66,6 +68,7 @@
                     var placeholder = this.data.placeholder || '';
                     var options = this.data.options || '';
                     var defaultValue = this.data.defaultValue !== undefined ? this.data.defaultValue : '';
+                    var mask = this.data.mask || '';
                     var displayVal = label || placeholder || name || '';
 
                     // Normaliza unidades de tamanho (se usuário digitou apenas número, assume px)
@@ -82,6 +85,7 @@
                     el.setAttribute('data-qfield-placeholder', placeholder);
                     el.setAttribute('data-qfield-options', options);
                     el.setAttribute('data-qfield-default', defaultValue);
+                    el.setAttribute('data-qfield-mask', mask);
 
                     // Mantém inline apenas as dimensões personalizadas pelo usuário
                     if (width) el.setStyle('width', width);

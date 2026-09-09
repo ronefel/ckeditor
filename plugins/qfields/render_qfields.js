@@ -53,6 +53,12 @@ var QFieldsRenderer = (function () {
                     if (height && height !== '22px') input.style.height = height;
                     if (placeholder) input.placeholder = placeholder;
                     if (isRequired) input.required = true;
+
+                    var mask = campo.getAttribute('data-qfield-mask') || '';
+                    if (mask) {
+                        input.setAttribute('data-qfield-mask', mask);
+                    }
+
                     targetNode = input;
                     break;
 
@@ -253,8 +259,59 @@ var QFieldsRenderer = (function () {
         return wrapper.innerHTML;
     }
 
+    /**
+     * Aplica uma máscara de formatação sobre um valor numérico/alfanumérico
+     * Suporta padrões como 999.999.999-99 (CPF), (99) 99999-9999 (Telefone), 99/99/9999 (Data), etc.
+     * @param {string} value - Valor atual do campo
+     * @param {string} mask - Padrão da máscara
+     * @returns {string} Valor formatado
+     */
+    function formatWithMask(value, mask) {
+        if (!value || !mask) return value || '';
+
+        var digitsOnly = value.replace(/\D/g, '');
+        if (!digitsOnly) return '';
+
+        // Ajuste dinâmico inteligente para celular vs fixo no Brasil: (99) 9999-9999 vs (99) 99999-9999
+        var effectiveMask = mask;
+        if (mask === '(99) 99999-9999' || mask === '(99) 9999-9999') {
+            effectiveMask = digitsOnly.length > 10 ? '(99) 99999-9999' : '(99) 9999-9999';
+        }
+
+        var formatted = '';
+        var digitIndex = 0;
+
+        for (var i = 0; i < effectiveMask.length && digitIndex < digitsOnly.length; i++) {
+            var maskChar = effectiveMask.charAt(i);
+            if (maskChar === '9' || maskChar === '0') {
+                formatted += digitsOnly.charAt(digitIndex);
+                digitIndex++;
+            } else {
+                formatted += maskChar;
+            }
+        }
+
+        return formatted;
+    }
+
+    // Registra listener delegado automático para formatação instantânea ao digitar
+    if (typeof document !== 'undefined') {
+        document.addEventListener('input', function (event) {
+            var target = event.target;
+            if (target && target.getAttribute && target.getAttribute('data-qfield-mask')) {
+                var maskPattern = target.getAttribute('data-qfield-mask');
+                var currentVal = target.value;
+                var formatted = formatWithMask(currentVal, maskPattern);
+                if (currentVal !== formatted) {
+                    target.value = formatted;
+                }
+            }
+        });
+    }
+
     return {
-        render: render
+        render: render,
+        formatWithMask: formatWithMask
     };
 })();
 

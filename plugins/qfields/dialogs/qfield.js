@@ -3,13 +3,13 @@
  */
 CKEDITOR.dialog.add('qfieldDialog', function (editor) {
     return {
-        title: 'Propriedades do Campo do Questionário',
+        title: 'Formatar Campo',
         minWidth: 420,
         minHeight: 280,
         contents: [
             {
                 id: 'tab-basic',
-                label: 'Configurações do Campo',
+                label: 'Formatar Campo',
                 elements: [
                     {
                         type: 'hbox',
@@ -18,7 +18,7 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                             {
                                 id: 'name',
                                 type: 'text',
-                                label: 'Nome da Variável / Identificador *',
+                                label: 'Identificador',
                                 'default': 'campo_1',
                                 required: true,
                                 validate: function () {
@@ -82,7 +82,7 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                     {
                         id: 'label',
                         type: 'text',
-                        label: 'Rótulo / Descrição do Campo (Opcional)',
+                        label: 'Descrição do Campo (Opcional)',
                         'default': '',
                         setup: function (widget) {
                             this.setValue(widget.data.label || '');
@@ -133,7 +133,7 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
             },
             {
                 id: 'tab-advanced',
-                label: 'Dimensões e Opções',
+                label: 'Avançado',
                 elements: [
                     {
                         type: 'hbox',
@@ -142,7 +142,7 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                             {
                                 id: 'width',
                                 type: 'text',
-                                label: 'Comprimento / Largura (ex: 200px, 100%)',
+                                label: 'Largura (ex: 200px, 100%)',
                                 'default': '200px',
                                 setup: function (widget) {
                                     this.setValue(widget.data.width || '200px');
@@ -157,14 +157,14 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                                 id: 'height',
                                 type: 'text',
                                 label: 'Altura (ex: 32px, 80px)',
-                                'default': '32px',
+                                'default': 'auto',
                                 setup: function (widget) {
-                                    this.setValue(widget.data.height || '32px');
+                                    this.setValue(widget.data.height || 'auto');
                                 },
                                 commit: function (widget) {
                                     var val = this.getValue().trim();
                                     if (val && !isNaN(val)) val += 'px';
-                                    widget.setData('height', val || '32px');
+                                    widget.setData('height', val || 'auto');
                                 }
                             }
                         ]
@@ -172,7 +172,7 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                     {
                         id: 'options',
                         type: 'textarea',
-                        rows: 4,
+                        rows: 2,
                         label: 'Opções (para Select e Radio)',
                         'default': '',
                         setup: function (widget) {
@@ -188,7 +188,25 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                             '💡 Separe as opções por vírgula (ex: <code>Opção 1, *Opção 2, Opção 3</code>).<br>' +
                             'Coloque um asterisco (<code>*</code>) antes da opção para marcá-la como <strong>padrão</strong>.' +
                             '</div>'
-                    }
+                    },
+                    {
+                        id: 'mask',
+                        type: 'text',
+                        label: 'Máscara (para Texto Simples)',
+                        'default': '',
+                        setup: function (widget) {
+                            this.setValue(widget.data.mask || '');
+                        },
+                        commit: function (widget) {
+                            widget.setData('mask', this.getValue() ? this.getValue().trim() : '');
+                        }
+                    },
+                    {
+                        type: 'html',
+                        html: '<div style="font-size: 12px; color: #475569; margin-top: -4px; margin-bottom: 8px; line-height: 1.4; white-space: normal; background: #f8fafc; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">' +
+                            '💡 (ex: <code>999.999.999-99</code> CPF, <code>(99) 99999-9999</code> Celular, <code>99/99/9999</code> Data, <code>99999-999</code> CEP).' +
+                            '</div>'
+                    },
                 ]
             }
         ]
