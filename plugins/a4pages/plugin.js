@@ -149,7 +149,7 @@
         var range = editor.createRange();
         range.moveToPosition(novoParagrafo, CKEDITOR.POSITION_AFTER_START);
         range.select();
-        novaFolha.scrollIntoView();
+        // novaFolha.scrollIntoView();
     }
 
     /**
@@ -195,42 +195,63 @@
     }
 
     /**
-     * Calcula o espaço livre real em pixels até o rodapé da folha A4
+     * Obtém a margem inferior interna (padding-bottom) da folha A4
+     */
+    function obterMargemInferiorInterna(folha) {
+        try {
+            var el = folha.$;
+            var win = folha.getWindow ? folha.getWindow().$ : window;
+            var estilo = win.getComputedStyle ? win.getComputedStyle(el) : null;
+            if (estilo && estilo.paddingBottom) {
+                return parseFloat(estilo.paddingBottom) || 80;
+            }
+        } catch (e) { }
+        return 80; // padrão ~2.5cm
+    }
+
+    /**
+     * Calcula o espaço livre real em pixels até o início da margem inferior da folha A4
      */
     function obterEspacoLivreNaFolha(folha) {
         if (!folha || !folha.$) return 0;
         var elFolha = folha.$;
-        var alturaUtil = elFolha.clientHeight;
+        var margemInferior = obterMargemInferiorInterna(folha);
+        var limiteInferior = elFolha.clientHeight - margemInferior;
 
         var ultimoFilho = folha.getLast(function (node) {
             return node.type === CKEDITOR.NODE_ELEMENT;
         });
 
         if (!ultimoFilho || !ultimoFilho.$) {
-            return alturaUtil;
+            return limiteInferior;
         }
 
         var rectFolha = elFolha.getBoundingClientRect();
         var rectUltimo = ultimoFilho.$.getBoundingClientRect();
         var alturaOcupada = rectUltimo.bottom - rectFolha.top;
 
-        var livre = alturaUtil - alturaOcupada;
+        var livre = limiteInferior - alturaOcupada;
         return livre > 0 ? livre : 0;
     }
 
     /**
-     * Verifica se o conteúdo ou o último elemento ultrapassou a altura máxima da folha A4
+     * Verifica se o conteúdo ou o último elemento ultrapassou a área útil (atingiu a margem inferior da folha A4)
      */
     function folhaUltrapassouLimite(folha, ultimoFilho) {
         if (!folha || !folha.$) return false;
-        if (folha.$.scrollHeight > folha.$.clientHeight + 2) return true;
+        var margemInferior = obterMargemInferiorInterna(folha);
+        var limiteInferior = folha.$.clientHeight - margemInferior;
+
         if (ultimoFilho && ultimoFilho.$) {
             var rectFolha = folha.$.getBoundingClientRect();
             var rectUltimo = ultimoFilho.$.getBoundingClientRect();
-            if (rectUltimo.bottom > (rectFolha.top + folha.$.clientHeight)) {
+            // Se a base do último elemento ultrapassar o início da margem inferior da página:
+            if (rectUltimo.bottom > (rectFolha.top + limiteInferior)) {
                 return true;
             }
         }
+
+        if (folha.$.scrollHeight > folha.$.clientHeight + 2) return true;
         return false;
     }
 
@@ -414,7 +435,7 @@
                         var r = editor.createRange();
                         r.moveToElementEditEnd(cursorMovidoParaElemento);
                         r.select();
-                        cursorMovidoParaElemento.scrollIntoView();
+                        // cursorMovidoParaElemento.scrollIntoView();
                     } catch (e) { }
                 } else if (bookmarks) {
                     try {
@@ -540,7 +561,7 @@
                                         rFim.moveToPosition(folhaAnterior, CKEDITOR.POSITION_BEFORE_END);
                                     }
                                     rFim.select();
-                                    folhaAnterior.scrollIntoView();
+                                    // folhaAnterior.scrollIntoView();
                                     return;
                                 }
                             }

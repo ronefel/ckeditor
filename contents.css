@@ -5,7 +5,7 @@ body.document-contents,
 	line-height: 1.15;
 	color: #000000;
 	background-color: #edf0f5;
-	padding: 20px 0 60px 0;
+	padding: 20px 0 20px 0;
 	margin: 0 auto;
 	width: 100%;
 	min-height: 100%;
@@ -24,10 +24,12 @@ body.document-contents,
 	height: 29.7cm;
 	max-height: 29.7cm;
 	overflow: hidden;
-	padding: 2cm 2cm;
-	margin: 0 auto 30px auto;
-	border: 1px solid #cbd5e1;
-	border-radius: 3px;
+
+	/* Margens internas da folha A4 */
+	padding: 1cm 1cm 1cm 1cm;
+
+	margin: 0 auto 20px auto;
+	border: 1px solid #e3e3e3;
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
 	box-sizing: border-box;
 	position: relative;
@@ -37,8 +39,13 @@ body.document-contents,
 	cursor: text;
 }
 
+/* Garante espaçamento extra generoso abaixo da última página para rolagem confortável */
+/* .folha-a4:last-child {
+	margin-bottom: 60px;
+} */
+
 /* Número da página automático no rodapé */
-.folha-a4[data-page]::after {
+/* .folha-a4[data-page]::after {
 	content: "Página " attr(data-page);
 	position: absolute;
 	bottom: 15px;
@@ -48,7 +55,7 @@ body.document-contents,
 	font-family: Arial, Helvetica, sans-serif;
 	user-select: none;
 	pointer-events: none;
-}
+} */
 
 /* Desativa visualmente qualquer tentativa de Magic Line entre as folhas */
 .cke_magicline,
