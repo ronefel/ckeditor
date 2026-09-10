@@ -179,66 +179,86 @@
             <!-- PAINEL 1: CKEDITOR (CRIAÇÃO DO QUESTIONÁRIO) -->
             <div class="card">
                 <div class="card-header">
-                    <h2><span>✏️</span> 1. Editor do Questionário (Modo Criação / Autor)</h2>
-                    <button type="button" class="btn" onclick="gerarFormularioResposta()">
-                        Visualizar Formulário de Resposta ➔
-                    </button>
+                    <h2><span>✏️</span> 1. Editor do Questionário (Plugin a4pages &bull; Folhas em Divs com Trava)</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn" style="background-color: #059669;" onclick="editorInstance.execCommand('addA4Page')">
+                            + Nova Página A4
+                        </button>
+                        <button type="button" class="btn" onclick="gerarFormularioResposta()">
+                            Visualizar Formulário de Resposta ➔
+                        </button>
+                    </div>
                 </div>
                 <p style="font-size: 13px; color: #64748b; margin-top: 0;">
-                    Clique no botão de formulário na barra de ferramentas para inserir ou dê <strong>duplo
-                        clique</strong> em um campo existente para editar suas dimensões (largura/altura) e
-                    propriedades.
+                    Cada página é um contêiner puro <code>&lt;div class="folha-a4"&gt;</code> (sem widget). O plugin <strong>a4pages</strong> intercepta o cursor e as teclas, impedindo a escrita fora das folhas. Clique em <strong>+ Nova Página A4</strong> para adicionar mais páginas.
                 </p>
                 <div id="editor">
-                    <p>Nome Completo: <span class="qfield-widget" data-qfield-type="text"
-                            data-qfield-name="nome_completo" data-qfield-label="rone santos" data-qfield-width="480px"
-                            data-qfield-height="auto" data-qfield-placeholder="rone santos">rone santos</span></p>
+                    <div class="folha-a4" data-page="1">
+                        <p style="text-align: center; font-size: 15pt; font-weight: bold; margin-bottom: 20px;">
+                            FICHA DE AVALIAÇÃO CLÍNICA (PÁGINA 1)
+                        </p>
 
-                    <p>Idade: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="idade"
-                            data-qfield-label="Idade" data-qfield-width="90px" data-qfield-height="auto">&nbsp;</span>
-                        Data de Nascimento.: <span class="qfield-widget" data-qfield-type="text"
-                            data-qfield-name="data_nascimento" data-qfield-label="DD/MM/AAAA"
-                            data-qfield-mask="99/99/9999" data-qfield-width="140px"
-                            data-qfield-height="auto">&nbsp;</span> Peso: <span class="qfield-widget"
-                            data-qfield-type="text" data-qfield-name="peso" data-qfield-label="Peso"
-                            data-qfield-width="70px" data-qfield-height="auto">&nbsp;</span> kg
-                    </p>
+                        <p>Nome Completo: <span class="qfield-widget" data-qfield-type="text"
+                                data-qfield-name="nome_completo" data-qfield-label="rone santos" data-qfield-width="460px"
+                                data-qfield-height="auto" data-qfield-placeholder="rone santos">rone santos</span></p>
 
-                    <p>Responsável: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="responsavel"
-                            data-qfield-label="Responsável" data-qfield-width="500px"
-                            data-qfield-height="auto">&nbsp;</span></p>
+                        <p>Idade: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="idade"
+                                data-qfield-label="Idade" data-qfield-width="90px" data-qfield-height="auto">&nbsp;</span>
+                            Data de Nascimento.: <span class="qfield-widget" data-qfield-type="text"
+                                data-qfield-name="data_nascimento" data-qfield-label="DD/MM/AAAA"
+                                data-qfield-mask="99/99/9999" data-qfield-width="140px"
+                                data-qfield-height="auto">&nbsp;</span> Peso: <span class="qfield-widget"
+                                data-qfield-type="text" data-qfield-name="peso" data-qfield-label="Peso"
+                                data-qfield-width="70px" data-qfield-height="auto">&nbsp;</span> kg
+                        </p>
 
-                    <p>CPF: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="cpf"
-                            data-qfield-label="000.000.000-00" data-qfield-mask="999.999.999-99"
-                            data-qfield-width="150px" data-qfield-height="auto">&nbsp;</span>
-                        &nbsp;&nbsp;
-                        Data do exame: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="data_exame"
-                            data-qfield-label="DD/MM/AAAA" data-qfield-mask="99/99/9999" data-qfield-width="140px"
-                            data-qfield-height="auto">&nbsp;</span></p>
+                        <p>Responsável: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="responsavel"
+                                data-qfield-label="Responsável" data-qfield-width="480px"
+                                data-qfield-height="auto">&nbsp;</span></p>
 
-                    <p>Tipo de Atendimento: <span class="qfield-widget" data-qfield-type="select"
-                            data-qfield-name="tipo_atendimento" data-qfield-label="Selecione..."
-                            data-qfield-options="*Consulta de Rotina, Emergência, Retorno, Exame Periódico"
-                            data-qfield-width="200px" data-qfield-height="auto">&nbsp;</span></p>
+                        <p>CPF: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="cpf"
+                                data-qfield-label="000.000.000-00" data-qfield-mask="999.999.999-99"
+                                data-qfield-width="150px" data-qfield-height="auto">&nbsp;</span>
+                            &nbsp;&nbsp;
+                            Data do exame: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="data_exame"
+                                data-qfield-label="DD/MM/AAAA" data-qfield-mask="99/99/9999" data-qfield-width="140px"
+                                data-qfield-height="auto">&nbsp;</span></p>
 
-                    <p>Urgente: <span class="qfield-widget" data-qfield-type="checkbox" data-qfield-name="urgente"
-                            data-qfield-label="Sim" data-qfield-default="true" data-qfield-width="auto"
-                            data-qfield-height="auto">&nbsp;</span>
-                        &nbsp;&nbsp;
-                        Necessita Acompanhante: <span class="qfield-widget" data-qfield-type="checkbox"
-                            data-qfield-name="acompanhante" data-qfield-label="Sim" data-qfield-default="false"
-                            data-qfield-width="auto" data-qfield-height="auto">&nbsp;</span></p>
+                        <p>Tipo de Atendimento: <span class="qfield-widget" data-qfield-type="select"
+                                data-qfield-name="tipo_atendimento" data-qfield-label="Selecione..."
+                                data-qfield-options="*Consulta de Rotina, Emergência, Retorno, Exame Periódico"
+                                data-qfield-width="200px" data-qfield-height="auto">&nbsp;</span></p>
 
-                    <p>Fumante: <span class="qfield-widget" data-qfield-type="radio" data-qfield-name="fumante"
-                            data-qfield-label="Fumante" data-qfield-options="*Não, Sim" data-qfield-width="auto"
-                            data-qfield-height="auto">&nbsp;</span></p>
+                        <p>Urgente: <span class="qfield-widget" data-qfield-type="checkbox" data-qfield-name="urgente"
+                                data-qfield-label="Sim" data-qfield-default="true" data-qfield-width="auto"
+                                data-qfield-height="auto">&nbsp;</span>
+                            &nbsp;&nbsp;
+                            Necessita Acompanhante: <span class="qfield-widget" data-qfield-type="checkbox"
+                                data-qfield-name="acompanhante" data-qfield-label="Sim" data-qfield-default="false"
+                                data-qfield-width="auto" data-qfield-height="auto">&nbsp;</span></p>
 
-                    <p>Observações / Laudo:<br>
-                        <span class="qfield-widget" data-qfield-type="textarea" data-qfield-name="observacoes"
-                            data-qfield-label="Observações" data-qfield-width="100%" data-qfield-height="auto"
-                            data-qfield-placeholder="Escreva aqui as observações...">Escreva aqui as
-                            observações...</span>
-                    </p>
+                        <p>Fumante: <span class="qfield-widget" data-qfield-type="radio" data-qfield-name="fumante"
+                                data-qfield-label="Fumante" data-qfield-options="*Não, Sim" data-qfield-width="auto"
+                                data-qfield-height="auto">&nbsp;</span></p>
+                    </div>
+
+                    <div class="folha-a4" data-page="2">
+                        <p style="text-align: center; font-size: 15pt; font-weight: bold; margin-bottom: 20px;">
+                            PARTE 2 &mdash; LAUDO CLÍNICO E OBSERVAÇÕES
+                        </p>
+
+                        <p>Observações / Parecer do Especialista:<br>
+                            <span class="qfield-widget" data-qfield-type="textarea" data-qfield-name="observacoes"
+                                data-qfield-label="Observações" data-qfield-width="100%" data-qfield-height="120px"
+                                data-qfield-placeholder="Escreva aqui as observações detalhadas...">Escreva aqui as
+                                observações detalhadas...</span>
+                        </p>
+
+                        <p style="margin-top: 60px;">
+                            Assinatura do Profissional Responsável:<br>
+                            _______________________________________________________________
+                        </p>
+                    </div>
                 </div>
             </div>
 

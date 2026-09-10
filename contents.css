@@ -1,18 +1,82 @@
+body.document-contents,
 .document-contents {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 11pt;
 	line-height: 1.15;
 	color: #000000;
-	width: 21cm;
-	min-height: 21cm;
-	padding: 1cm 1cm 1cm;
-	margin: 0.5cm auto;
-	border: 1px #D3D3D3 solid;
-	border-radius: 5px;
-	background: white;
-	box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+	background-color: #edf0f5;
+	padding: 20px 0 60px 0;
+	margin: 0 auto;
+	width: 100%;
+	min-height: 100%;
+	border: none;
+	box-shadow: none;
 	box-sizing: border-box;
+}
+
+/* ==========================================================================
+   PLUGIN A4PAGES: Folhas Físicas A4 em Contêineres Independentes
+   ========================================================================== */
+
+.folha-a4 {
+	background-color: #ffffff;
+	width: 21cm;
+	height: 29.7cm;
+	max-height: 29.7cm;
+	overflow: hidden;
+	padding: 2cm 2cm;
+	margin: 0 auto 30px auto;
+	border: 1px solid #cbd5e1;
+	border-radius: 3px;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+	box-sizing: border-box;
+	position: relative;
 	word-wrap: break-word;
+	page-break-after: always;
+	page-break-inside: avoid;
+	cursor: text;
+}
+
+/* Número da página automático no rodapé */
+.folha-a4[data-page]::after {
+	content: "Página " attr(data-page);
+	position: absolute;
+	bottom: 15px;
+	right: 2cm;
+	font-size: 11px;
+	color: #94a3b8;
+	font-family: Arial, Helvetica, sans-serif;
+	user-select: none;
+	pointer-events: none;
+}
+
+/* Indicador visual discreto quando a folha física A4 estiver cheia */
+.folha-a4.folha-cheia {
+	border-bottom: 3px solid #ef4444;
+}
+
+.folha-a4.folha-cheia::before {
+	content: "⚠️ Capacidade máxima da folha A4 atingida (crie uma nova página)";
+	position: absolute;
+	bottom: 12px;
+	left: 2cm;
+	font-size: 10px;
+	font-weight: bold;
+	color: #dc2626;
+	background: #fee2e2;
+	padding: 2px 8px;
+	border-radius: 3px;
+	user-select: none;
+	pointer-events: none;
+}
+
+/* Desativa visualmente qualquer tentativa de Magic Line entre as folhas */
+.cke_magicline,
+.cke_magicline_box,
+[data-cke-magicline] {
+	display: none !important;
+	visibility: hidden !important;
+	pointer-events: none !important;
 }
 
 .document-contents blockquote {
