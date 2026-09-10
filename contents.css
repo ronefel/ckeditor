@@ -50,26 +50,6 @@ body.document-contents,
 	pointer-events: none;
 }
 
-/* Indicador visual discreto quando a folha física A4 estiver cheia */
-.folha-a4.folha-cheia {
-	border-bottom: 3px solid #ef4444;
-}
-
-.folha-a4.folha-cheia::before {
-	content: "⚠️ Capacidade máxima da folha A4 atingida (crie uma nova página)";
-	position: absolute;
-	bottom: 12px;
-	left: 2cm;
-	font-size: 10px;
-	font-weight: bold;
-	color: #dc2626;
-	background: #fee2e2;
-	padding: 2px 8px;
-	border-radius: 3px;
-	user-select: none;
-	pointer-events: none;
-}
-
 /* Desativa visualmente qualquer tentativa de Magic Line entre as folhas */
 .cke_magicline,
 .cke_magicline_box,
@@ -328,7 +308,6 @@ body.document-contents,
 	height: auto;
 	padding: 0;
 	margin: 0;
-	vertical-align: middle;
 }
 
 .document-contents select,
@@ -336,7 +315,6 @@ body.document-contents,
 	height: auto;
 	padding: 0;
 	margin: 0;
-	vertical-align: middle;
 	cursor: pointer;
 }
 
@@ -355,7 +333,6 @@ body.document-contents,
 .document-contents .qfield-widget {
 	box-sizing: border-box;
 	max-width: 100%;
-	vertical-align: middle;
 	cursor: pointer;
 	user-select: none;
 	font-family: inherit;
@@ -381,9 +358,6 @@ body.document-contents,
 .document-contents .qfield-widget.qfield-text-styled {
 	display: inline-block;
 	min-height: fit-content;
-	padding: 0;
-	margin: 0;
-	vertical-align: middle;
 }
 
 .document-contents .qfield-widget.qfield-text-styled .qfield-text-val {
@@ -391,12 +365,10 @@ body.document-contents,
 	font-family: inherit;
 	font-size: inherit;
 	color: #757575;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	overflow: clip;
 	white-space: nowrap;
 	max-width: 100%;
 	line-height: normal;
-	vertical-align: middle;
 }
 
 /* Campo de Texto Longo (Textarea) */
@@ -404,8 +376,6 @@ body.document-contents,
 	display: block;
 	width: 100%;
 	min-height: 32px;
-	padding: 0;
-	margin: 0;
 	line-height: 1.4;
 }
 
@@ -416,7 +386,7 @@ body.document-contents,
 	color: #757575;
 	line-height: 1.4;
 	white-space: pre-wrap;
-	overflow: hidden;
+	overflow: clip;
 }
 
 /* Campo de Seleção (Select) */
@@ -424,9 +394,6 @@ body.document-contents,
 	display: inline-flex;
 	align-items: center;
 	height: auto;
-	padding: 0;
-	margin: 0;
-	vertical-align: middle;
 }
 
 .document-contents .qfield-widget.qfield-select-styled .qfield-select-val {
@@ -434,13 +401,11 @@ body.document-contents,
 	font-family: inherit;
 	font-size: inherit;
 	color: #757575;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	overflow: clip;
 	white-space: nowrap;
 	max-width: calc(100% - 16px);
 	flex: 1;
 	line-height: normal;
-	vertical-align: middle;
 }
 
 .document-contents .qfield-widget.qfield-select-styled .qfield-select-arrow {
@@ -456,9 +421,6 @@ body.document-contents,
 	display: inline-flex;
 	align-items: center;
 	height: auto;
-	padding: 0;
-	margin: 0;
-	vertical-align: middle;
 	cursor: pointer;
 	user-select: none;
 	font-family: inherit;
@@ -488,7 +450,6 @@ body.document-contents,
 /* Checkbox no Formulário de Resposta */
 .document-contents .qform-checkbox-container {
 	display: inline-block;
-	vertical-align: middle;
 	margin: 0;
 }
 
@@ -497,7 +458,6 @@ body.document-contents,
 	align-items: center;
 	cursor: pointer;
 	user-select: none;
-	vertical-align: middle;
 	font-family: inherit;
 	font-size: inherit;
 }
@@ -519,7 +479,6 @@ body.document-contents,
 	color: #000;
 	white-space: nowrap;
 	line-height: normal;
-	vertical-align: middle;
 }
 
 .document-contents .qform-checkbox-mark {
@@ -546,9 +505,6 @@ body.document-contents,
 	display: inline-flex;
 	align-items: center;
 	height: auto;
-	padding: 0;
-	margin: 0;
-	vertical-align: middle;
 	cursor: pointer;
 	user-select: none;
 	font-family: inherit;
@@ -560,7 +516,6 @@ body.document-contents,
 	display: inline-flex;
 	align-items: center;
 	margin-right: 12px;
-	vertical-align: middle;
 }
 
 .document-contents .qfield-widget.qfield-radio-styled .qfield-radio-box {
@@ -585,7 +540,6 @@ body.document-contents,
 /* Radio no Formulário de Resposta */
 .document-contents .qform-radio-container {
 	display: inline-block;
-	vertical-align: middle;
 	margin: 0;
 }
 
@@ -594,7 +548,6 @@ body.document-contents,
 	align-items: center;
 	cursor: pointer;
 	user-select: none;
-	vertical-align: middle;
 	font-family: inherit;
 	font-size: inherit;
 	margin-right: 12px;
@@ -617,7 +570,6 @@ body.document-contents,
 	color: #000;
 	white-space: nowrap;
 	line-height: normal;
-	vertical-align: middle;
 }
 
 .document-contents .qform-radio-mark {
@@ -641,6 +593,20 @@ body.document-contents,
 
 .document-contents .cke_widget_wrapper {
 	line-height: normal;
+	padding: 0 1px;
+}
+
+.document-contents .cke_widget_wrapper:hover>.cke_widget_element {
+	outline: 0;
+}
+
+.document-contents .cke_widget_wrapper:hover>.cke_widget_drag_handler_container {
+	display: none !important;
+}
+
+
+.document-contents .cke_widget_drag_handler_container {
+	display: none !important;
 }
 
 .document-contents .cke_widget_wrapper:has(.qfield-textarea-styled) {
@@ -664,6 +630,7 @@ body.document-contents,
 	border: none;
 	background-color: #fef08a;
 	box-shadow: none;
+	transition: none;
 }
 
 .document-contents .qfield-widget:not(.qfield-text-styled):not(.qfield-textarea-styled):not(.qfield-select-styled):not(.qfield-checkbox-styled):not(.qfield-radio-styled):hover {
@@ -729,8 +696,7 @@ body.document-contents,
 .document-contents .qfield-badge-name {
 	font-weight: 600;
 	color: #1e293b;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	overflow: clip;
 	white-space: nowrap;
 	flex: 1;
 }

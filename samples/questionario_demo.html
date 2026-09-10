@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Demonstração: Questionário com Campos Dinâmicos (CKEditor 4)</title>
     <script src="../ckeditor.js"></script>
+    <script>CKEDITOR.timestamp = 'a4_flow_' + Date.now();</script>
     <link rel="stylesheet" href="../contents.css">
     <style>
         body {
@@ -181,7 +182,8 @@
                 <div class="card-header">
                     <h2><span>✏️</span> 1. Editor do Questionário (Plugin a4pages &bull; Folhas em Divs com Trava)</h2>
                     <div style="display: flex; gap: 8px;">
-                        <button type="button" class="btn" style="background-color: #059669;" onclick="editorInstance.execCommand('addA4Page')">
+                        <button type="button" class="btn" style="background-color: #059669;"
+                            onclick="editorInstance.execCommand('addA4Page')">
                             + Nova Página A4
                         </button>
                         <button type="button" class="btn" onclick="gerarFormularioResposta()">
@@ -190,20 +192,25 @@
                     </div>
                 </div>
                 <p style="font-size: 13px; color: #64748b; margin-top: 0;">
-                    Cada página é um contêiner puro <code>&lt;div class="folha-a4"&gt;</code> (sem widget). O plugin <strong>a4pages</strong> intercepta o cursor e as teclas, impedindo a escrita fora das folhas. Clique em <strong>+ Nova Página A4</strong> para adicionar mais páginas.
+                    <strong>Paginação Automática Estilo Word:</strong> Cada página possui altura fixa A4 (29.7cm).
+                    Conforme você digita ou dá Enter e o conteúdo ultrapassa o limite da folha, ele transborda
+                    automaticamente para a página seguinte (criando uma nova página caso ainda não exista). Não é
+                    permitido escrever fora das páginas.
                 </p>
                 <div id="editor">
                     <div class="folha-a4" data-page="1">
-                        <p style="text-align: center; font-size: 15pt; font-weight: bold; margin-bottom: 20px;">
+                        <p>
                             FICHA DE AVALIAÇÃO CLÍNICA (PÁGINA 1)
                         </p>
 
                         <p>Nome Completo: <span class="qfield-widget" data-qfield-type="text"
-                                data-qfield-name="nome_completo" data-qfield-label="rone santos" data-qfield-width="460px"
-                                data-qfield-height="auto" data-qfield-placeholder="rone santos">rone santos</span></p>
+                                data-qfield-name="nome_completo" data-qfield-label="rone santos"
+                                data-qfield-width="460px" data-qfield-height="auto"
+                                data-qfield-placeholder="rone santos">rone santos</span></p>
 
                         <p>Idade: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="idade"
-                                data-qfield-label="Idade" data-qfield-width="90px" data-qfield-height="auto">&nbsp;</span>
+                                data-qfield-label="Idade" data-qfield-width="90px"
+                                data-qfield-height="auto">&nbsp;</span>
                             Data de Nascimento.: <span class="qfield-widget" data-qfield-type="text"
                                 data-qfield-name="data_nascimento" data-qfield-label="DD/MM/AAAA"
                                 data-qfield-mask="99/99/9999" data-qfield-width="140px"
@@ -212,16 +219,17 @@
                                 data-qfield-width="70px" data-qfield-height="auto">&nbsp;</span> kg
                         </p>
 
-                        <p>Responsável: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="responsavel"
-                                data-qfield-label="Responsável" data-qfield-width="480px"
+                        <p>Responsável: <span class="qfield-widget" data-qfield-type="text"
+                                data-qfield-name="responsavel" data-qfield-label="Responsável" data-qfield-width="480px"
                                 data-qfield-height="auto">&nbsp;</span></p>
 
                         <p>CPF: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="cpf"
                                 data-qfield-label="000.000.000-00" data-qfield-mask="999.999.999-99"
                                 data-qfield-width="150px" data-qfield-height="auto">&nbsp;</span>
                             &nbsp;&nbsp;
-                            Data do exame: <span class="qfield-widget" data-qfield-type="text" data-qfield-name="data_exame"
-                                data-qfield-label="DD/MM/AAAA" data-qfield-mask="99/99/9999" data-qfield-width="140px"
+                            Data do exame: <span class="qfield-widget" data-qfield-type="text"
+                                data-qfield-name="data_exame" data-qfield-label="DD/MM/AAAA"
+                                data-qfield-mask="99/99/9999" data-qfield-width="140px"
                                 data-qfield-height="auto">&nbsp;</span></p>
 
                         <p>Tipo de Atendimento: <span class="qfield-widget" data-qfield-type="select"
@@ -243,7 +251,7 @@
                     </div>
 
                     <div class="folha-a4" data-page="2">
-                        <p style="text-align: center; font-size: 15pt; font-weight: bold; margin-bottom: 20px;">
+                        <p>
                             PARTE 2 &mdash; LAUDO CLÍNICO E OBSERVAÇÕES
                         </p>
 
@@ -254,7 +262,7 @@
                                 observações detalhadas...</span>
                         </p>
 
-                        <p style="margin-top: 60px;">
+                        <p>
                             Assinatura do Profissional Responsável:<br>
                             _______________________________________________________________
                         </p>

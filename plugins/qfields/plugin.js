@@ -101,7 +101,6 @@
                             this.wrapper.setStyle('clear', 'both');
                         } else {
                             this.wrapper.setStyle('display', 'inline-block');
-                            this.wrapper.setStyle('vertical-align', type === 'textarea' ? 'top' : 'middle');
                         }
                     }
 

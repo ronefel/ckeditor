@@ -1,26 +1,25 @@
 /**
  * Plugin a4pages para CKEditor 4
  * Gerencia documentos divididos em páginas físicas A4 (div.folha-a4)
- * sem uso de Widget, com trava estrita para não permitir escrita fora das folhas.
+ * com altura fixa e fluxo automático contínuo estilo Word:
+ * - Se o texto ultrapassar a página atual, ele transborda automaticamente para a próxima página.
+ * - Se a próxima página não existir, ela é criada automaticamente.
+ * - Não permite escrever no vão cinza fora das páginas.
  */
 (function () {
     'use strict';
+
+    var emAjuste = false;
+    var timerAjuste = null;
 
     CKEDITOR.plugins.add('a4pages', {
         icons: 'a4page',
 
         init: function (editor) {
-            // Comando para adicionar nova página A4
+            // Comando para adicionar nova página A4 manualmente
             editor.addCommand('addA4Page', {
                 exec: function (editor) {
-                    adicionarNovaPagina(editor);
-                }
-            });
-
-            // Comando para remover a página atual (se houver mais de 1)
-            editor.addCommand('removeA4Page', {
-                exec: function (editor) {
-                    removerPaginaAtual(editor);
+                    adicionarNovaPaginaManual(editor);
                 }
             });
 
@@ -34,17 +33,21 @@
                 });
             }
 
-            // Garante que o documento tenha pelo menos 1 folha A4 e impede escrita fora
+            // Inicialização
             editor.on('instanceReady', function () {
                 garantirEstruturaA4(editor);
                 instalarTravas(editor);
+                // Executa a primeira paginação
+                setTimeout(function () {
+                    ajustarFluxoPaginas(editor);
+                }, 100);
             });
 
-            // Re-verifica estrutura sempre que novo conteúdo for carregado (setData)
             editor.on('setData', function () {
                 setTimeout(function () {
                     garantirEstruturaA4(editor);
-                }, 50);
+                    ajustarFluxoPaginas(editor);
+                }, 100);
             });
         }
     });
@@ -66,13 +69,11 @@
     function garantirEstruturaA4(editor) {
         var doc = editor.document;
         if (!doc) return;
-
         var body = doc.getBody();
         if (!body) return;
 
         var folhas = body.find('.folha-a4');
 
-        // Se não houver nenhuma folha, envolve todo o conteúdo do body na Página 1
         if (folhas.count() === 0) {
             var htmlExistente = body.getHtml().trim();
             if (!htmlExistente || htmlExistente === '<p><br></p>' || htmlExistente === '<p>&nbsp;</p>') {
@@ -80,14 +81,13 @@
             }
             body.setHtml('<div class="folha-a4" data-page="1">' + htmlExistente + '</div>');
         } else {
-            // Se houver nós órfãos soltos fora das folhas (direto no body), move para a folha mais próxima
             moverNosOrfaosParaFolhas(editor);
             renumerarPaginas(editor);
         }
     }
 
     /**
-     * Move qualquer elemento/texto que esteja solto fora das folhas para dentro da folha mais próxima
+     * Move qualquer elemento/texto solto fora das folhas para dentro da folha mais próxima
      */
     function moverNosOrfaosParaFolhas(editor) {
         var body = editor.document.getBody();
@@ -99,18 +99,34 @@
             if (child.hasClass && child.hasClass('folha-a4')) {
                 ultimaFolha = child;
             } else if (child.getName && child.getName() !== 'script' && child.getName() !== 'style') {
-                // Se for um nó órfão fora da folha
-                if (ultimaFolha) {
-                    child.move(ultimaFolha, false); // Move para o final da última folha
+                var texto = child.getText ? child.getText().trim() : '';
+                var html = child.getHtml ? child.getHtml().trim() : '';
+                if (!texto || texto === '' || html === '<br>' || html === '&nbsp;' || html === '') {
+                    child.remove();
+                } else if (ultimaFolha) {
+                    child.move(ultimaFolha, false);
                 }
             }
         }
     }
 
     /**
-     * Adiciona uma nova folha A4 no final do documento
+     * Renumera data-page="1", "2", ...
      */
-    function adicionarNovaPagina(editor) {
+    function renumerarPaginas(editor) {
+        var doc = editor.document;
+        if (!doc) return;
+        var folhas = doc.getBody().find('.folha-a4');
+        for (var i = 0; i < folhas.count(); i++) {
+            var f = folhas.getItem(i);
+            f.setAttribute('data-page', (i + 1).toString());
+        }
+    }
+
+    /**
+     * Adiciona manualmente uma nova folha física A4
+     */
+    function adicionarNovaPaginaManual(editor) {
         var doc = editor.document;
         var body = doc.getBody();
         garantirEstruturaA4(editor);
@@ -129,75 +145,311 @@
         body.append(novaFolha);
         renumerarPaginas(editor);
 
-        // Posiciona o cursor no novo parágrafo da nova página
         editor.focus();
         var range = editor.createRange();
         range.moveToPosition(novoParagrafo, CKEDITOR.POSITION_AFTER_START);
         range.select();
-
-        // Rola suavemente até a nova folha
         novaFolha.scrollIntoView();
     }
 
     /**
-     * Remove a folha A4 onde o cursor está posicionado (desde que não seja a única)
+     * Verifica se um elemento do CKEditor é considerado vazio
+     * (parágrafos vazios, com apenas <br>, &nbsp; ou espaços em branco)
      */
-    function removerPaginaAtual(editor) {
-        var sel = editor.getSelection();
-        if (!sel) return;
-
-        var el = sel.getStartElement();
-        var folha = obterFolhaAscendente(el);
-        if (!folha) return;
-
-        var doc = editor.document;
-        var folhas = doc.getBody().find('.folha-a4');
-        if (folhas.count() <= 1) {
-            alert('Não é possível remover a única página do documento.');
-            return;
+    function isElementoVazio(el) {
+        if (!el || el.type !== CKEDITOR.NODE_ELEMENT) return true;
+        // Se tiver widgets ou elementos visuais de formulário/mídia, não está vazio
+        if (el.find && el.find('.qfield-widget, img, table, iframe, hr, input, select, button').count() > 0) {
+            return false;
         }
+        var texto = el.getText ? el.getText() : '';
+        // Remove espaços não separáveis (&nbsp; = \u00a0) e espaços normais
+        texto = texto.replace(/\u00a0/g, ' ').trim();
+        return texto === '';
+    }
 
-        if (confirm('Tem certeza de que deseja excluir esta página (Página ' + (folha.getAttribute('data-page') || '') + ')?')) {
-            var folhaAnterior = folha.getPrevious(function (node) {
-                return node.hasClass && node.hasClass('folha-a4');
-            }) || folha.getNext(function (node) {
-                return node.hasClass && node.hasClass('folha-a4');
-            });
+    /**
+     * Verifica se uma folha A4 está vazia para fins de remoção automática
+     */
+    function isFolhaVazia(folha) {
+        if (!folha || !folha.find) return true;
+        if (folha.find('.qfield-widget, img, table, iframe, hr, input, select, button').count() > 0) {
+            return false;
+        }
+        var texto = folha.getText ? folha.getText() : '';
+        texto = texto.replace(/\u00a0/g, ' ').trim();
+        if (texto !== '') return false;
 
-            folha.remove();
-            renumerarPaginas(editor);
-
-            if (folhaAnterior) {
-                var range = editor.createRange();
-                range.moveToPosition(folhaAnterior, CKEDITOR.POSITION_BEFORE_END);
-                range.select();
-                folhaAnterior.scrollIntoView();
+        // Se o texto é vazio e não tem widgets, verifica os blocos filhos
+        var filhos = folha.getChildren();
+        var qtdBlocos = 0;
+        for (var i = 0; i < filhos.count(); i++) {
+            var item = filhos.getItem(i);
+            if (item.type === CKEDITOR.NODE_ELEMENT) {
+                qtdBlocos++;
+                if (!isElementoVazio(item)) return false;
             }
         }
+        // Se tiver 0 ou 1 bloco vazio, é considerada vazia
+        return qtdBlocos <= 1;
     }
 
     /**
-     * Atualiza sequencialmente os atributos data-page="1", "2", ...
+     * Calcula o espaço livre real em pixels até o rodapé da folha A4
      */
-    function renumerarPaginas(editor) {
+    function obterEspacoLivreNaFolha(folha) {
+        if (!folha || !folha.$) return 0;
+        var elFolha = folha.$;
+        var alturaUtil = elFolha.clientHeight;
+
+        var ultimoFilho = folha.getLast(function (node) {
+            return node.type === CKEDITOR.NODE_ELEMENT;
+        });
+
+        if (!ultimoFilho || !ultimoFilho.$) {
+            return alturaUtil;
+        }
+
+        var rectFolha = elFolha.getBoundingClientRect();
+        var rectUltimo = ultimoFilho.$.getBoundingClientRect();
+        var alturaOcupada = rectUltimo.bottom - rectFolha.top;
+
+        var livre = alturaUtil - alturaOcupada;
+        return livre > 0 ? livre : 0;
+    }
+
+    /**
+     * Verifica se o conteúdo ou o último elemento ultrapassou a altura máxima da folha A4
+     */
+    function folhaUltrapassouLimite(folha, ultimoFilho) {
+        if (!folha || !folha.$) return false;
+        if (folha.$.scrollHeight > folha.$.clientHeight + 2) return true;
+        if (ultimoFilho && ultimoFilho.$) {
+            var rectFolha = folha.$.getBoundingClientRect();
+            var rectUltimo = ultimoFilho.$.getBoundingClientRect();
+            if (rectUltimo.bottom > (rectFolha.top + folha.$.clientHeight)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * FLUXO CONTÍNUO ESTILO WORD:
+     * Transborda elementos excedentes (incluindo parágrafos vazios) para a próxima página,
+     * recolhe elementos de volta se houver espaço e gerencia páginas com perfeição.
+     */
+    function ajustarFluxoPaginas(editor) {
+        if (emAjuste) return;
         var doc = editor.document;
         if (!doc) return;
-        var folhas = doc.getBody().find('.folha-a4');
-        for (var i = 0; i < folhas.count(); i++) {
-            var f = folhas.getItem(i);
-            f.setAttribute('data-page', (i + 1).toString());
+        var body = doc.getBody();
+        if (!body) return;
+
+        emAjuste = true;
+
+        try {
+            var sel = editor.getSelection();
+            var bookmarks = null;
+            var elAtivo = null;
+            var folhaAtiva = null;
+
+            if (sel && sel.getType() !== CKEDITOR.SELECTION_NONE) {
+                elAtivo = sel.getStartElement();
+                folhaAtiva = obterFolhaAscendente(elAtivo);
+                try {
+                    bookmarks = sel.createBookmarks2(true);
+                } catch (e) { }
+            }
+
+            var houveMudanca = false;
+            var cursorMovidoParaElemento = null;
+            var folhas = body.find('.folha-a4');
+
+            // 1. FLUXO DIRETO (PUSH): Transborda elementos excedentes para a próxima página
+            for (var i = 0; i < folhas.count(); i++) {
+                var folha = folhas.getItem(i);
+                if (!folha || !folha.$) continue;
+
+                var limiteSeguranca = 50; // Proteção contra loop infinito
+                while (limiteSeguranca > 0) {
+                    // Pega o último elemento de bloco da folha
+                    var ultimoFilho = folha.getLast(function (node) {
+                        return node.type === CKEDITOR.NODE_ELEMENT;
+                    });
+
+                    if (!ultimoFilho) break;
+
+                    // Se não ultrapassou o limite físico da folha, para
+                    if (!folhaUltrapassouLimite(folha, ultimoFilho)) break;
+
+                    limiteSeguranca--;
+
+                    // Conta quantos elementos filhos reais existem
+                    var filhosElementos = folha.getChildren();
+                    var qtdElementos = 0;
+                    for (var c = 0; c < filhosElementos.count(); c++) {
+                        if (filhosElementos.getItem(c).type === CKEDITOR.NODE_ELEMENT) qtdElementos++;
+                    }
+
+                    // Se só houver 1 elemento e ele for maior que a folha, não pode mais mover
+                    if (qtdElementos <= 1) break;
+
+                    houveMudanca = true;
+
+                    // Verifica se o cursor do usuário está dentro deste elemento que vai ser movido
+                    var cursorNesteElemento = false;
+                    if (elAtivo && (elAtivo.equals(ultimoFilho) || ultimoFilho.contains(elAtivo))) {
+                        cursorNesteElemento = true;
+                    }
+
+                    // Encontra ou cria a próxima folha A4
+                    var proximaFolha = folha.getNext(function (node) {
+                        return node.hasClass && node.hasClass('folha-a4');
+                    });
+
+                    if (!proximaFolha) {
+                        proximaFolha = new CKEDITOR.dom.element('div');
+                        proximaFolha.addClass('folha-a4');
+                        proximaFolha.insertAfter(folha);
+                        folhas = body.find('.folha-a4'); // Atualiza a lista
+                    }
+
+                    // Move o elemento excedente para o topo da próxima página
+                    var primeiroFilhoProxima = proximaFolha.getFirst(function (node) {
+                        return node.type === CKEDITOR.NODE_ELEMENT;
+                    });
+
+                    if (primeiroFilhoProxima) {
+                        ultimoFilho.insertBefore(primeiroFilhoProxima);
+                    } else {
+                        proximaFolha.append(ultimoFilho);
+                    }
+
+                    // Se o cursor estava neste elemento, registra para reposicionar na nova folha
+                    if (cursorNesteElemento) {
+                        cursorMovidoParaElemento = ultimoFilho;
+                    }
+                }
+            }
+
+            // 2. FLUXO REVERSO (PULL): Puxa elementos de volta da próxima página se couberem
+            folhas = body.find('.folha-a4');
+            for (var p = 0; p < folhas.count() - 1; p++) {
+                var folhaAtual = folhas.getItem(p);
+                var folhaSeguinte = folhaAtual.getNext(function (node) {
+                    return node.hasClass && node.hasClass('folha-a4');
+                });
+                if (!folhaSeguinte) continue;
+
+                var limitePull = 20;
+                while (limitePull > 0) {
+                    limitePull--;
+
+                    // Calcula o espaço livre real na folha atual
+                    var espacoLivre = obterEspacoLivreNaFolha(folhaAtual);
+                    if (espacoLivre < 20) {
+                        // Menos de 20px livres: não cabe sequer uma linha simples
+                        break;
+                    }
+
+                    var primeiroDaSeguinte = folhaSeguinte.getFirst(function (node) {
+                        return node.type === CKEDITOR.NODE_ELEMENT;
+                    });
+                    if (!primeiroDaSeguinte || !primeiroDaSeguinte.$) break;
+
+                    // Mede a altura real do elemento na folha seguinte
+                    var rectItem = primeiroDaSeguinte.$.getBoundingClientRect();
+                    var alturaItem = rectItem.height || primeiroDaSeguinte.$.offsetHeight || 20;
+
+                    // Se a altura do elemento (mais folga de margem) exceder o espaço livre, não cabe!
+                    if (alturaItem + 5 > espacoLivre) {
+                        break;
+                    }
+
+                    // Se couber perfeitamente:
+                    var cursorNoItem = false;
+                    if (elAtivo && (elAtivo.equals(primeiroDaSeguinte) || primeiroDaSeguinte.contains(elAtivo))) {
+                        cursorNoItem = true;
+                    }
+
+                    // Move para a folha atual
+                    folhaAtual.append(primeiroDaSeguinte);
+                    houveMudanca = true;
+
+                    if (cursorNoItem) {
+                        cursorMovidoParaElemento = primeiroDaSeguinte;
+                    }
+                }
+            }
+
+            // 3. LIMPEZA DE PÁGINAS VAZIAS SUBSEQUENTES:
+            // Remove folhas que ficaram totalmente sem nenhum bloco
+            folhas = body.find('.folha-a4');
+            for (var j = folhas.count() - 1; j > 0; j--) {
+                var f = folhas.getItem(j);
+
+                // NUNCA remova a folha ativa onde o usuário está
+                if (folhaAtiva && folhaAtiva.equals(f)) continue;
+
+                // Conta quantos blocos existem dentro da folha
+                var qtdFilhosBlocos = 0;
+                var ch = f.getChildren();
+                for (var b = 0; b < ch.count(); b++) {
+                    if (ch.getItem(b).type === CKEDITOR.NODE_ELEMENT) qtdFilhosBlocos++;
+                }
+
+                // Se a folha ficou com 0 blocos (todos subiram para a folha anterior):
+                if (qtdFilhosBlocos === 0) {
+                    f.remove();
+                    houveMudanca = true;
+                }
+            }
+
+            if (houveMudanca) {
+                renumerarPaginas(editor);
+
+                if (cursorMovidoParaElemento) {
+                    try {
+                        var r = editor.createRange();
+                        r.moveToElementEditEnd(cursorMovidoParaElemento);
+                        r.select();
+                        cursorMovidoParaElemento.scrollIntoView();
+                    } catch (e) { }
+                } else if (bookmarks) {
+                    try {
+                        editor.getSelection().selectBookmarks(bookmarks);
+                    } catch (e) { }
+                }
+            }
+        } catch (err) {
+            // Falha silenciosa para não interromper a digitação
+        } finally {
+            emAjuste = false;
         }
     }
 
     /**
-     * Instala as travas de teclado, seleção e clique para impedir digitação ou cursor fora de .folha-a4
+     * Debounce para o ajuste de fluxo não pesar durante digitação rápida
+     */
+    function dispararAjusteDebounced(editor, delay) {
+        if (timerAjuste) clearTimeout(timerAjuste);
+        timerAjuste = setTimeout(function () {
+            ajustarFluxoPaginas(editor);
+        }, delay || 50);
+    }
+
+    /**
+     * Instala as travas de teclado e foco
      */
     function instalarTravas(editor) {
         var doc = editor.document;
         if (!doc) return;
 
-        // 1. Trava de Seleção: Se o cursor for colocado fora de qualquer folha, puxa para dentro da folha
+        // 1. Trava de Seleção: Mantém o cursor sempre dentro de uma folha
         editor.on('selectionChange', function (evt) {
+            if (emAjuste) return;
+
             var sel = evt.data.selection;
             if (!sel) return;
 
@@ -206,19 +458,18 @@
 
             var folha = obterFolhaAscendente(startEl);
             if (!folha) {
-                // Está fora de qualquer folha (no body cinza da mesa)
                 var body = doc.getBody();
                 var folhas = body.find('.folha-a4');
                 if (folhas.count() > 0) {
-                    var primeiraFolha = folhas.getItem(0);
+                    var ultimaFolha = folhas.getItem(folhas.count() - 1);
                     var range = editor.createRange();
-                    range.moveToPosition(primeiraFolha, CKEDITOR.POSITION_AFTER_START);
+                    range.moveToPosition(ultimaFolha, CKEDITOR.POSITION_BEFORE_END);
                     range.select();
                 }
             }
         });
 
-        // 2. Trava de Teclado: Bloqueia digitação fora da folha e impede apagar a própria div .folha-a4 com Backspace/Delete
+        // 2. Trava de Teclado
         editor.on('key', function (evt) {
             var keyCode = evt.data.keyCode;
             var sel = editor.getSelection();
@@ -227,83 +478,101 @@
             var startEl = sel.getStartElement();
             var folha = obterFolhaAscendente(startEl);
 
-            // Se por qualquer razão não estiver dentro de uma folha, CANCELA qualquer tecla!
+            // Bloqueia qualquer tecla fora das folhas
             if (!folha) {
                 evt.cancel();
                 garantirEstruturaA4(editor);
                 return;
             }
 
-            // Trava contra Backspace (8) no início da folha para não destruir o contêiner
+            // Backspace (8)
             if (keyCode === 8) {
-                var range = sel.getRanges()[0];
-                if (range && range.collapsed) {
-                    // Verifica se está no início absoluto da folha
-                    var testRange = range.clone();
-                    testRange.moveToPosition(folha, CKEDITOR.POSITION_AFTER_START);
-                    if (range.compareBoundaryPoints(CKEDITOR.START_TO_START, testRange) === 0) {
-                        // Está no início exato da folha! Bloqueia o Backspace para não mesclar com folha anterior nem apagar div
-                        evt.cancel();
-                        return;
+                var ranges = sel.getRanges();
+                if (ranges && ranges.length > 0) {
+                    var range = ranges[0];
+                    if (range && range.collapsed) {
+                        // Verifica se está no início do bloco atual
+                        var noInicioDoBloco = false;
+                        try {
+                            noInicioDoBloco = range.checkStartOfBlock();
+                        } catch (e) { }
+
+                        if (noInicioDoBloco) {
+                            var path = range.startPath();
+                            var blocoAtual = path ? path.block : null;
+                            var primeiroBloco = folha.getFirst(function (n) {
+                                return n.type === CKEDITOR.NODE_ELEMENT;
+                            });
+
+                            // Se estiver no primeiro bloco da folha e no início dele
+                            if (blocoAtual && primeiroBloco && (blocoAtual.equals(primeiroBloco) || primeiroBloco.contains(blocoAtual))) {
+                                var folhaAnterior = folha.getPrevious(function (node) {
+                                    return node.hasClass && node.hasClass('folha-a4');
+                                });
+
+                                if (!folhaAnterior) {
+                                    // Na Página 1, no início absoluto: cancela o backspace para não sair da folha
+                                    evt.cancel();
+                                    return;
+                                }
+
+                                // Na Página 2 ou posterior:
+                                var ch = folha.getChildren();
+                                var qtdBlocos = 0;
+                                for (var k = 0; k < ch.count(); k++) {
+                                    if (ch.getItem(k).type === CKEDITOR.NODE_ELEMENT) qtdBlocos++;
+                                }
+
+                                // Se a folha atual só tem esse parágrafo e ele está vazio:
+                                if (qtdBlocos <= 1 && isElementoVazio(blocoAtual)) {
+                                    evt.cancel();
+                                    folha.remove();
+                                    renumerarPaginas(editor);
+
+                                    // Move o cursor para o final da folha anterior
+                                    var ultimoBlocoAnt = folhaAnterior.getLast(function (n) {
+                                        return n.type === CKEDITOR.NODE_ELEMENT;
+                                    });
+                                    var rFim = editor.createRange();
+                                    if (ultimoBlocoAnt) {
+                                        rFim.moveToElementEditEnd(ultimoBlocoAnt);
+                                    } else {
+                                        rFim.moveToPosition(folhaAnterior, CKEDITOR.POSITION_BEFORE_END);
+                                    }
+                                    rFim.select();
+                                    folhaAnterior.scrollIntoView();
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            // Trava contra Delete (46) no final da folha para não puxar a próxima folha
-            if (keyCode === 46) {
-                var rangeDel = sel.getRanges()[0];
-                if (rangeDel && rangeDel.collapsed) {
-                    var testRangeDel = rangeDel.clone();
-                    testRangeDel.moveToPosition(folha, CKEDITOR.POSITION_BEFORE_END);
-                    if (rangeDel.compareBoundaryPoints(CKEDITOR.END_TO_END, testRangeDel) === 0) {
-                        // Está no fim exato da folha! Bloqueia Delete para não mesclar
-                        evt.cancel();
-                        return;
-                    }
-                }
-            }
-
-            // Trava para Enter (13): Garante que novo parágrafo NUNCA escape para fora da .folha-a4
+            // Se for Enter (13), dispara ajuste mais rápido para resposta imediata
             if (keyCode === 13) {
-                // Se a folha já atingiu ou excedeu a capacidade máxima de 29.7cm, impede criar novas linhas
-                if (folha.$ && folha.$.scrollHeight > folha.$.clientHeight) {
-                    evt.cancel();
-                    folha.addClass('folha-cheia');
-                    return;
-                }
-
-                var rangeEnter = sel.getRanges()[0];
-                if (rangeEnter && rangeEnter.collapsed) {
-                    var endCheck = rangeEnter.clone();
-                    endCheck.moveToPosition(folha, CKEDITOR.POSITION_BEFORE_END);
-                    if (rangeEnter.compareBoundaryPoints(CKEDITOR.END_TO_END, endCheck) === 0) {
-                        evt.cancel();
-                        var novoP = new CKEDITOR.dom.element('p');
-                        novoP.appendBogus();
-                        folha.append(novoP);
-                        var newR = editor.createRange();
-                        newR.moveToPosition(novoP, CKEDITOR.POSITION_AFTER_START);
-                        newR.select();
-                        novoP.scrollIntoView();
-                        return;
-                    }
-                }
+                setTimeout(function () {
+                    ajustarFluxoPaginas(editor);
+                }, 20);
+            } else {
+                // Outras teclas disparam com debounce normal
+                dispararAjusteDebounced(editor, 60);
             }
-        }, null, null, 1); // Prioridade 1 (executa antes dos comandos normais)
 
-        // Monitora mudanças para limpar nós órfãos e sinalizar se alguma folha transbordou
+        }, null, null, 1);
+
+        // Dispara ajuste contínuo em eventos de mudança (colar, cortar, desfazer, etc.)
         editor.on('change', function () {
-            limparNosOrfaos(editor);
-            verificarCapacidadeFolhas(editor);
+            moverNosOrfaosParaFolhas(editor);
+            dispararAjusteDebounced(editor, 60);
         });
 
-        // 3. Clique direto no body cinza da mesa de trabalho
+        // 3. Clique no espaço cinza fora das folhas: redireciona para a folha mais próxima
         doc.getBody().on('click', function (evt) {
             var target = evt.data.getTarget();
             var folha = obterFolhaAscendente(target);
             if (!folha) {
-                // Clicou fora: foca no final da folha mais próxima
-                limparNosOrfaos(editor);
+                moverNosOrfaosParaFolhas(editor);
                 var folhas = doc.getBody().find('.folha-a4');
                 if (folhas.count() > 0) {
                     var ultima = folhas.getItem(folhas.count() - 1);
@@ -313,56 +582,6 @@
                 }
             }
         });
-    }
-
-    /**
-     * Remove parágrafos vazios que tentem ser criados no body fora de .folha-a4
-     */
-    function limparNosOrfaos(editor) {
-        var doc = editor.document;
-        if (!doc) return;
-        var body = doc.getBody();
-        if (!body) return;
-        var children = body.getChildren();
-        var ultimaFolha = null;
-
-        for (var i = children.count() - 1; i >= 0; i--) {
-            var child = children.getItem(i);
-            if (child.hasClass && child.hasClass('folha-a4')) {
-                ultimaFolha = child;
-            } else if (child.getName && child.getName() !== 'script' && child.getName() !== 'style') {
-                var texto = child.getText ? child.getText().trim() : '';
-                var html = child.getHtml ? child.getHtml().trim() : '';
-                if (!texto || texto === '' || html === '<br>' || html === '&nbsp;' || html === '') {
-                    child.remove();
-                } else if (ultimaFolha) {
-                    child.move(ultimaFolha, false);
-                }
-            }
-        }
-    }
-
-    /**
-     * Verifica todas as folhas A4 e marca com .folha-cheia caso o conteúdo exceda a altura fixa de 29.7cm
-     */
-    function verificarCapacidadeFolhas(editor) {
-        var doc = editor.document;
-        if (!doc) return;
-        var body = doc.getBody();
-        if (!body) return;
-        var folhas = body.find('.folha-a4');
-
-        for (var i = 0; i < folhas.count(); i++) {
-            var f = folhas.getItem(i);
-            if (f.$) {
-                // Se o scrollHeight for maior que o clientHeight (altura visível fixa)
-                if (f.$.scrollHeight > f.$.clientHeight + 2) {
-                    f.addClass('folha-cheia');
-                } else {
-                    f.removeClass('folha-cheia');
-                }
-            }
-        }
     }
 
 })();
