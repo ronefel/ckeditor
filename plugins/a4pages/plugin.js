@@ -546,25 +546,27 @@
 
         // 1. Trava de Seleção: Mantém o cursor sempre dentro de uma folha
         editor.on('selectionChange', function (evt) {
-            if (emAjuste) return;
+            try {
+                if (emAjuste) return;
 
-            var sel = evt.data.selection;
-            if (!sel) return;
+                var sel = evt.data ? evt.data.selection : editor.getSelection();
+                if (!sel) return;
 
-            var startEl = sel.getStartElement();
-            if (!startEl) return;
+                var startEl = sel.getStartElement();
+                if (!startEl) return;
 
-            var folha = obterFolhaAscendente(startEl);
-            if (!folha) {
-                var body = doc.getBody();
-                var folhas = body.find('.folha-a4');
-                if (folhas.count() > 0) {
-                    var ultimaFolha = folhas.getItem(folhas.count() - 1);
-                    var range = editor.createRange();
-                    range.moveToPosition(ultimaFolha, CKEDITOR.POSITION_BEFORE_END);
-                    range.select();
+                var folha = obterFolhaAscendente(startEl);
+                if (!folha) {
+                    var body = doc.getBody();
+                    var folhas = body.find('.folha-a4');
+                    if (folhas.count() > 0) {
+                        var ultimaFolha = folhas.getItem(folhas.count() - 1);
+                        var range = editor.createRange();
+                        range.moveToPosition(ultimaFolha, CKEDITOR.POSITION_BEFORE_END);
+                        range.select();
+                    }
                 }
-            }
+            } catch (err) { }
         });
 
         // 2. Trava de Teclado

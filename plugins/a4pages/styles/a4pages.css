@@ -33,6 +33,7 @@ body.cke_editable {
    page-break-after: always;
    page-break-inside: avoid;
    cursor: text;
+   pointer-events: auto !important;
 }
 
 /* Garante espaçamento extra generoso abaixo da última página para rolagem confortável */

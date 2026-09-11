@@ -1,0 +1,121 @@
+/**
+ * Estilos para o plugin imageresize do CKEditor 4
+ * Fornece interface limpa para caixa delimitadora, alças de redimensionamento e badge de dimensões.
+ */
+
+/* Remove a película azul nativa APENAS quando o redimensionamento estiver ativo na imagem */
+img.cke-image-resizing::selection {
+    background: transparent !important;
+    color: transparent !important;
+}
+
+img.cke-image-resizing::-moz-selection {
+    background: transparent !important;
+    color: transparent !important;
+}
+
+/* Contêiner principal do redimensionador (overlay posicionado sobre a imagem) */
+.cke-image-resizer-wrapper {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px dashed #475569;
+    background: transparent !important;
+    pointer-events: none;
+    z-index: 10001;
+    display: none;
+}
+
+/* Alças de redimensionamento (handles) */
+.cke-image-resizer-handle {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    background-color: #ffffff;
+    border: 1.5px solid #2563eb;
+    border-radius: 2px;
+    box-sizing: border-box;
+    pointer-events: auto !important;
+    z-index: 10002;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.cke-image-resizer-handle:hover,
+.cke-image-resizer-handle.active {
+    background-color: #2563eb;
+    transform: scale(1.3);
+}
+
+/* Posicionamento das 8 alças */
+.cke-image-resizer-handle.handle-nw {
+    top: -5px;
+    left: -5px;
+    cursor: nwse-resize;
+}
+
+.cke-image-resizer-handle.handle-n {
+    top: -5px;
+    left: 50%;
+    margin-left: -4.5px;
+    cursor: ns-resize;
+}
+
+.cke-image-resizer-handle.handle-ne {
+    top: -5px;
+    right: -5px;
+    cursor: nesw-resize;
+}
+
+.cke-image-resizer-handle.handle-e {
+    top: 50%;
+    right: -5px;
+    margin-top: -4.5px;
+    cursor: ew-resize;
+}
+
+.cke-image-resizer-handle.handle-se {
+    bottom: -5px;
+    right: -5px;
+    cursor: nwse-resize;
+}
+
+.cke-image-resizer-handle.handle-s {
+    bottom: -5px;
+    left: 50%;
+    margin-left: -4.5px;
+    cursor: ns-resize;
+}
+
+.cke-image-resizer-handle.handle-sw {
+    bottom: -5px;
+    left: -5px;
+    cursor: nesw-resize;
+}
+
+.cke-image-resizer-handle.handle-w {
+    top: 50%;
+    left: -5px;
+    margin-top: -4.5px;
+    cursor: ew-resize;
+}
+
+/* Badge/Tooltip com dimensões da imagem em tempo real */
+.cke-image-resizer-tooltip {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.88);
+    color: #ffffff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10003;
+    letter-spacing: 0.3px;
+}
