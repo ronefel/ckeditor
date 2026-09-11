@@ -42,6 +42,7 @@
 
             // Inicialização
             editor.on('instanceReady', function () {
+                if (!editorSuportaA4Pages(editor)) return;
                 garantirEstruturaA4(editor);
                 instalarTravas(editor);
                 // Executa a primeira paginação
@@ -51,6 +52,7 @@
             });
 
             editor.on('setData', function () {
+                if (!editorSuportaA4Pages(editor)) return;
                 setTimeout(function () {
                     garantirEstruturaA4(editor);
                     ajustarFluxoPaginas(editor);
@@ -58,6 +60,47 @@
             });
         }
     });
+
+    /**
+     * Verifica se a instância do editor deve gerenciar páginas A4 físicas.
+     * Retorna falso para editores inline, utilitários do Toolbar Configurator
+     * ou instâncias que compartilham o body da página hospedeira.
+     */
+    function editorSuportaA4Pages(editor) {
+        if (!editor) return false;
+        if (editor.config && editor.config.a4pages === false) return false;
+
+        // Instâncias internas de utilitários como Toolbar Configurator
+        if (editor.name && (editor.name.indexOf('fte') === 0 || editor.name === 'editor')) {
+            // No Toolbar Configurator, a instância do editor tem o plugin toolbarconfiguratorarea
+            if (editor.plugins && editor.plugins.toolbarconfiguratorarea) return false;
+        }
+        if (editor.plugins && editor.plugins.toolbarconfiguratorarea) {
+            return false;
+        }
+
+        // Editores inline não possuem páginas físicas isoladas
+        if (editor.editable && editor.editable() && editor.editable().isInline()) {
+            return false;
+        }
+
+        // Se o body do editor for o mesmo body da janela principal (evita tocar no DOM hospedeiro)
+        if (editor.document && editor.document.getBody) {
+            try {
+                var body = editor.document.getBody();
+                if (!body || !body.$) return false;
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.document && CKEDITOR.document.getBody) {
+                    if (body.equals(CKEDITOR.document.getBody())) {
+                        return false;
+                    }
+                }
+            } catch (e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Encontra a folha A4 mais próxima a partir de um elemento
@@ -74,6 +117,7 @@
      * Garante que todo o conteúdo esteja encapsulado em .folha-a4
      */
     function garantirEstruturaA4(editor) {
+        if (!editorSuportaA4Pages(editor)) return;
         var doc = editor.document;
         if (!doc) return;
         var body = doc.getBody();
@@ -97,6 +141,7 @@
      * Move qualquer elemento/texto solto fora das folhas para dentro da folha mais próxima
      */
     function moverNosOrfaosParaFolhas(editor) {
+        if (!editorSuportaA4Pages(editor)) return;
         var body = editor.document.getBody();
         var children = body.getChildren();
         var ultimaFolha = null;
@@ -111,7 +156,7 @@
                 if (!texto || texto === '' || html === '<br>' || html === '&nbsp;' || html === '') {
                     child.remove();
                 } else if (ultimaFolha) {
-                    child.move(ultimaFolha, false);
+                    ultimaFolha.append(child);
                 }
             }
         }
@@ -147,6 +192,7 @@
      * Adiciona manualmente uma nova folha física A4
      */
     function adicionarNovaPaginaManual(editor) {
+        if (!editorSuportaA4Pages(editor)) return;
         var doc = editor.document;
         var body = doc.getBody();
         garantirEstruturaA4(editor);
@@ -282,6 +328,7 @@
      * recolhe elementos de volta se houver espaço e gerencia páginas com perfeição.
      */
     function ajustarFluxoPaginas(editor) {
+        if (!editorSuportaA4Pages(editor)) return;
         if (emAjuste) return;
         var doc = editor.document;
         if (!doc) return;
@@ -354,20 +401,16 @@
                         proximaFolha = new CKEDITOR.dom.element('div');
                         proximaFolha.addClass('folha-a4');
                         aplicarMargensPersonalizadas(proximaFolha, editor);
-                        proximaFolha.insertAfter(folha);
+                        if (folha && folha.$ && folha.$.parentNode) {
+                            proximaFolha.insertAfter(folha);
+                        } else {
+                            body.append(proximaFolha);
+                        }
                         folhas = body.find('.folha-a4'); // Atualiza a lista
                     }
 
-                    // Move o elemento excedente para o topo da próxima página
-                    var primeiroFilhoProxima = proximaFolha.getFirst(function (node) {
-                        return node.type === CKEDITOR.NODE_ELEMENT;
-                    });
-
-                    if (primeiroFilhoProxima) {
-                        ultimoFilho.insertBefore(primeiroFilhoProxima);
-                    } else {
-                        proximaFolha.append(ultimoFilho);
-                    }
+                    // Move o elemento excedente para o topo da próxima página com segurança absoluta
+                    proximaFolha.append(ultimoFilho, true);
 
                     // Se o cursor estava neste elemento, registra para reposicionar na nova folha
                     if (cursorNesteElemento) {
@@ -486,6 +529,7 @@
      * Instala as travas de teclado e foco
      */
     function instalarTravas(editor) {
+        if (!editorSuportaA4Pages(editor)) return;
         var doc = editor.document;
         if (!doc) return;
 
