@@ -8,7 +8,7 @@ CKEDITOR.editorConfig = function (config) {
 	config.language = 'pt-br';
 	config.defaultLanguage = 'pt-br';
 
-	config.removePlugins = 'exportpdf,scayt,magicline';
+	config.removePlugins = 'exportpdf,scayt,magicline,forms';
 	config.extraPlugins = 'lineheight,qfields,a4pages';
 	config.allowedContent = true;
 
@@ -40,5 +40,5 @@ CKEDITOR.editorConfig = function (config) {
 		{ name: 'about', groups: ['about'] }
 	];
 
-	config.removeButtons = 'Save,NewPage,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Replace,SelectAll,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Subscript,Superscript,CreateDiv,BidiLtr,BidiRtl,Language,Anchor,Smiley,SpecialChar,Iframe,Styles,Format,Maximize,About,Link,Unlink'
+	config.removeButtons = 'Save,NewPage,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Replace,SelectAll,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Subscript,Superscript,CreateDiv,BidiLtr,BidiRtl,Language,Anchor,Smiley,SpecialChar,Iframe,Styles,Format,Maximize,About,Link,Unlink,ShowBlocks';
 };

@@ -13,21 +13,28 @@
     var timerAjuste = null;
 
     CKEDITOR.plugins.add('a4pages', {
+        requires: 'dialog',
         icons: 'a4page',
 
         init: function (editor) {
-            // Comando para adicionar nova página A4 manualmente
+            // Registra o diálogo de configurações da página A4 (Margens)
+            CKEDITOR.dialog.add('a4PageDialog', this.path + 'dialogs/a4page.js');
+
+            // Comando para abrir o diálogo de configuração de página A4
+            editor.addCommand('a4PageConfig', new CKEDITOR.dialogCommand('a4PageDialog'));
+
+            // Comando para adicionar nova página A4 manualmente (compatibilidade com botões externos)
             editor.addCommand('addA4Page', {
                 exec: function (editor) {
                     adicionarNovaPaginaManual(editor);
                 }
             });
 
-            // Botão na barra de ferramentas
+            // Botão na barra de ferramentas: Configurações da Página A4 (Margens)
             if (editor.ui.addButton) {
                 editor.ui.addButton('AddA4Page', {
-                    label: 'Adicionar Nova Página A4',
-                    command: 'addA4Page',
+                    label: 'Configurações da Página A4 (Margens)',
+                    command: 'a4PageConfig',
                     toolbar: 'document,50',
                     icon: this.path + 'icons/a4page.png'
                 });
@@ -124,6 +131,19 @@
     }
 
     /**
+     * Aplica as margens personalizadas configuradas pelo usuário na folha
+     */
+    function aplicarMargensPersonalizadas(folha, editor) {
+        if (!folha || !editor) return;
+        if (editor._a4MargensPadrao) {
+            folha.setStyle('padding-top', editor._a4MargensPadrao.top);
+            folha.setStyle('padding-bottom', editor._a4MargensPadrao.bottom);
+            folha.setStyle('padding-left', editor._a4MargensPadrao.left);
+            folha.setStyle('padding-right', editor._a4MargensPadrao.right);
+        }
+    }
+
+    /**
      * Adiciona manualmente uma nova folha física A4
      */
     function adicionarNovaPaginaManual(editor) {
@@ -137,6 +157,7 @@
         var novaFolha = new CKEDITOR.dom.element('div');
         novaFolha.addClass('folha-a4');
         novaFolha.setAttribute('data-page', proximaPagina);
+        aplicarMargensPersonalizadas(novaFolha, editor);
 
         var novoParagrafo = new CKEDITOR.dom.element('p');
         novoParagrafo.appendBogus();
@@ -332,6 +353,7 @@
                     if (!proximaFolha) {
                         proximaFolha = new CKEDITOR.dom.element('div');
                         proximaFolha.addClass('folha-a4');
+                        aplicarMargensPersonalizadas(proximaFolha, editor);
                         proximaFolha.insertAfter(folha);
                         folhas = body.find('.folha-a4'); // Atualiza a lista
                     }
