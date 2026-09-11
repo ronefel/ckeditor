@@ -17,6 +17,17 @@
         icons: 'a4page',
 
         init: function (editor) {
+            // Registra a folha de estilos do plugin A4Pages no conteúdo do editor
+            var cssPath = this.path + 'styles/a4pages.css';
+            if (editor.addContentsCss) {
+                editor.addContentsCss(cssPath);
+            }
+            editor.on('contentDom', function () {
+                if (editor.document && editorSuportaA4Pages(editor)) {
+                    editor.document.appendStyleSheet(cssPath);
+                }
+            });
+
             // Registra o diálogo de configurações da página A4 (Margens)
             CKEDITOR.dialog.add('a4PageDialog', this.path + 'dialogs/a4page.js');
 
