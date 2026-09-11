@@ -21,7 +21,7 @@
                 allowedContent: true,
 
                 template:
-                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="" data-qfield-default="" data-qfield-mask="">' +
+                    '<span class="qfield-widget" data-qfield-type="text" data-qfield-name="campo" data-qfield-label="Campo" data-qfield-width="200px" data-qfield-height="auto" data-qfield-required="false" data-qfield-placeholder="" data-qfield-options="" data-qfield-default="" data-qfield-mask="" data-qfield-sigmode="draw">' +
                     '<span class="qfield-text-val">campo</span>' +
                     '</span>',
 
@@ -36,13 +36,14 @@
                     var type = el.getAttribute('data-qfield-type') || 'text';
                     var name = el.getAttribute('data-qfield-name') || 'campo';
                     var label = el.hasAttribute('data-qfield-label') ? el.getAttribute('data-qfield-label') : '';
-                    var width = el.getAttribute('data-qfield-width') || ((type === 'checkbox' || type === 'radio') ? 'auto' : '200px');
-                    var height = el.getAttribute('data-qfield-height') || ((type === 'text' || type === 'select') ? '22px' : (type === 'textarea' ? '60px' : 'auto'));
+                    var width = el.getAttribute('data-qfield-width') || ((type === 'checkbox' || type === 'radio') ? 'auto' : (type === 'signature' ? '320px' : '200px'));
+                    var height = el.getAttribute('data-qfield-height') || ((type === 'text' || type === 'select') ? '22px' : (type === 'textarea' ? '60px' : (type === 'signature' ? '130px' : 'auto')));
                     var required = el.getAttribute('data-qfield-required') === 'true';
                     var placeholder = el.getAttribute('data-qfield-placeholder') || '';
                     var options = el.getAttribute('data-qfield-options') || '';
                     var defaultValue = el.getAttribute('data-qfield-default') || '';
                     var mask = el.getAttribute('data-qfield-mask') || '';
+                    var sigMode = el.getAttribute('data-qfield-sigmode') || 'draw';
 
                     this.setData('type', type);
                     this.setData('name', name);
@@ -54,6 +55,7 @@
                     this.setData('options', options);
                     this.setData('defaultValue', defaultValue);
                     this.setData('mask', mask);
+                    this.setData('sigMode', sigMode);
                 },
 
                 // Atualiza a visualização e atributos sempre que os dados mudam
@@ -69,6 +71,7 @@
                     var options = this.data.options || '';
                     var defaultValue = this.data.defaultValue !== undefined ? this.data.defaultValue : '';
                     var mask = this.data.mask || '';
+                    var sigMode = this.data.sigMode || 'draw';
                     var displayVal = label || placeholder || name || '';
 
                     // Normaliza unidades de tamanho (se usuário digitou apenas número, assume px)
@@ -86,6 +89,7 @@
                     el.setAttribute('data-qfield-options', options);
                     el.setAttribute('data-qfield-default', defaultValue);
                     el.setAttribute('data-qfield-mask', mask);
+                    el.setAttribute('data-qfield-sigmode', sigMode);
 
                     // Mantém inline apenas as dimensões personalizadas pelo usuário
                     if (width) el.setStyle('width', width);
@@ -111,6 +115,7 @@
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
                         el.removeClass('qfield-radio-styled');
+                        el.removeClass('qfield-signature-styled');
                         el.addClass('qfield-text-styled');
 
                         var innerHtml = displayVal ? CKEDITOR.tools.htmlEncode(displayVal) : '&nbsp;';
@@ -122,6 +127,7 @@
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
                         el.removeClass('qfield-radio-styled');
+                        el.removeClass('qfield-signature-styled');
                         el.addClass('qfield-textarea-styled');
 
                         if (this.wrapper) {
@@ -137,6 +143,7 @@
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-checkbox-styled');
                         el.removeClass('qfield-radio-styled');
+                        el.removeClass('qfield-signature-styled');
                         el.addClass('qfield-select-styled');
 
                         if (this.wrapper) {
@@ -170,6 +177,7 @@
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-radio-styled');
+                        el.removeClass('qfield-signature-styled');
                         el.addClass('qfield-checkbox-styled');
 
                         if (this.wrapper) {
@@ -189,6 +197,7 @@
                         el.removeClass('qfield-textarea-styled');
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
+                        el.removeClass('qfield-signature-styled');
                         el.addClass('qfield-radio-styled');
 
                         if (this.wrapper) {
@@ -231,6 +240,37 @@
                         }
 
                         el.setHtml(radioHtml);
+                    } else if (type === 'signature') {
+                        // Estilo assinatura limpo para o editor
+                        el.removeClass('qfield-badge-container');
+                        el.removeClass('qfield-text-styled');
+                        el.removeClass('qfield-textarea-styled');
+                        el.removeClass('qfield-select-styled');
+                        el.removeClass('qfield-checkbox-styled');
+                        el.removeClass('qfield-radio-styled');
+                        el.addClass('qfield-signature-styled');
+
+                        if (this.wrapper) {
+                            this.wrapper.setStyle('line-height', 'normal');
+                        }
+
+                        var sigIcon = (sigMode === 'upload') ? '📁' : '✍️';
+                        var sigTypeLabel = (sigMode === 'upload') ? 'Upload de Assinatura' : 'Assinatura a Punho';
+                        var labelText = label || displayVal || 'Assinatura';
+
+                        var sigHtml =
+                            '<div class="qfield-signature-inner">' +
+                                '<div class="qfield-signature-header">' +
+                                    '<span class="qfield-signature-icon">' + sigIcon + '</span>' +
+                                    '<span class="qfield-signature-type-text">' + sigTypeLabel + '</span>' +
+                                '</div>' +
+                                '<div class="qfield-signature-bottom">' +
+                                    '<div class="qfield-signature-line"></div>' +
+                                    '<div class="qfield-signature-title">' + CKEDITOR.tools.htmlEncode(labelText) + '</div>' +
+                                '</div>' +
+                            '</div>';
+
+                        el.setHtml(sigHtml);
                     } else {
                         // Outros tipos de campo
                         el.removeClass('qfield-text-styled');
@@ -238,6 +278,7 @@
                         el.removeClass('qfield-select-styled');
                         el.removeClass('qfield-checkbox-styled');
                         el.removeClass('qfield-radio-styled');
+                        el.removeClass('qfield-signature-styled');
                         el.addClass('qfield-badge-container');
 
                         var reqBadge = required ? '<span class="qfield-badge-req" title="Obrigatório">*</span>' : '';

@@ -6,6 +6,21 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
         title: 'Formatar Campo',
         minWidth: 420,
         minHeight: 280,
+        onShow: function () {
+            var dialog = this;
+            var typeInput = dialog.getContentElement('tab-basic', 'type');
+            if (typeInput) {
+                var currentType = typeInput.getValue();
+                var sigModeInput = dialog.getContentElement('tab-basic', 'sigMode');
+                if (sigModeInput && sigModeInput.getElement()) {
+                    if (currentType === 'signature') {
+                        sigModeInput.getElement().show();
+                    } else {
+                        sigModeInput.getElement().hide();
+                    }
+                }
+            }
+        },
         contents: [
             {
                 id: 'tab-basic',
@@ -46,7 +61,8 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                                     ['Texto Longo (Textarea)', 'textarea'],
                                     ['Lista Suspensa (Select)', 'select'],
                                     ['Caixa de Seleção (Checkbox)', 'checkbox'],
-                                    ['Múltipla Escolha (Radio)', 'radio']
+                                    ['Múltipla Escolha (Radio)', 'radio'],
+                                    ['Assinatura', 'signature']
                                 ],
                                 setup: function (widget) {
                                     this.setValue(widget.data.type || 'text');
@@ -58,7 +74,16 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                                     var dialog = this.getDialog();
                                     var heightInput = dialog.getContentElement('tab-advanced', 'height');
                                     var widthInput = dialog.getContentElement('tab-advanced', 'width');
+                                    var sigModeInput = dialog.getContentElement('tab-basic', 'sigMode');
                                     var currentType = this.getValue();
+
+                                    if (sigModeInput) {
+                                        if (currentType === 'signature') {
+                                            sigModeInput.getElement().show();
+                                        } else {
+                                            sigModeInput.getElement().hide();
+                                        }
+                                    }
 
                                     if (heightInput) {
                                         if (currentType === 'text') {
@@ -73,11 +98,40 @@ CKEDITOR.dialog.add('qfieldDialog', function (editor) {
                                         } else if (currentType === 'checkbox' || currentType === 'radio') {
                                             heightInput.setValue('auto');
                                             if (widthInput) widthInput.setValue('auto');
+                                        } else if (currentType === 'signature') {
+                                            heightInput.setValue('130px');
+                                            if (widthInput) widthInput.setValue('320px');
                                         }
                                     }
                                 }
                             }
                         ]
+                    },
+                    {
+                        id: 'sigMode',
+                        type: 'select',
+                        label: 'Modalidade da Assinatura',
+                        'default': 'draw',
+                        items: [
+                            ['A Punho (Desenho em Tablet / Tela)', 'draw'],
+                            ['Upload de Arquivo (Imagem)', 'upload']
+                        ],
+                        setup: function (widget) {
+                            this.setValue(widget.data.sigMode || 'draw');
+                            var isSig = (widget.data.type === 'signature');
+                            if (this.getElement()) {
+                                if (isSig) {
+                                    this.getElement().show();
+                                } else {
+                                    this.getElement().hide();
+                                }
+                            }
+                        },
+                        commit: function (widget) {
+                            if (widget.data.type === 'signature') {
+                                widget.setData('sigMode', this.getValue());
+                            }
+                        }
                     },
                     {
                         id: 'label',

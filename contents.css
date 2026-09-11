@@ -492,6 +492,65 @@ body.document-contents,
 	color: #757575;
 }
 
+/* Campo de Assinatura no Editor */
+.document-contents .qfield-widget.qfield-signature-styled {
+	display: inline-block;
+	background-color: #fffdf5;
+	border: 1.5px dashed #d97706;
+	border-radius: 6px;
+	box-sizing: border-box;
+	vertical-align: middle;
+	padding: 8px 12px;
+	cursor: pointer;
+}
+
+.document-contents .qfield-widget.qfield-signature-styled .qfield-signature-inner {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100%;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.document-contents .qfield-widget.qfield-signature-styled .qfield-signature-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	color: #b45309;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+}
+
+.document-contents .qfield-widget.qfield-signature-styled .qfield-signature-bottom {
+	margin-top: auto;
+	width: 100%;
+	padding-top: 10px;
+}
+
+.document-contents .qfield-widget.qfield-signature-styled .qfield-signature-line {
+	border-bottom: 1.5px solid #64748b;
+	margin-bottom: 4px;
+	width: 100%;
+}
+
+.document-contents .qfield-widget.qfield-signature-styled .qfield-signature-title {
+	font-size: 12px;
+	color: #475569;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.document-contents .cke_widget_wrapper.cke_widget_focused .qfield-widget.qfield-signature-styled,
+.document-contents .cke_widget_wrapper.cke_widget_selected .qfield-widget.qfield-signature-styled {
+	outline: 2px solid #2563eb;
+	border-color: #2563eb;
+	background-color: #eff6ff;
+}
+
 /* Radio no Formulário de Resposta */
 .document-contents .qform-radio-container {
 	display: inline-block;
