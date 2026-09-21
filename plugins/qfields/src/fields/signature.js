@@ -192,9 +192,9 @@ var SignatureField = (function () {
                     if (canvas) {
                         canvas.style.display = 'block';
 
-                        // Inicializa dimensões de alta definição (Retina / Mobile / Tablet)
+                        // Inicializa dimensões de alta definição (Retina / Mobile / Tablet com supersampling 2x mínimo)
                         var rect = canvas.getBoundingClientRect();
-                        var dpr = window.devicePixelRatio || 1;
+                        var dpr = Math.max(window.devicePixelRatio || 1, 2);
                         var w = drawBox.clientWidth || Math.max(Math.round(rect.width), 100);
                         var h = drawBox.clientHeight || Math.max(Math.round(rect.height), 60);
 
@@ -204,6 +204,8 @@ var SignatureField = (function () {
                         canvas.style.height = h + 'px';
 
                         var ctx = canvas.getContext('2d');
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
                         ctx.scale(dpr, dpr);
                         ctx.lineCap = 'round';
                         ctx.lineJoin = 'round';
@@ -284,14 +286,142 @@ var SignatureField = (function () {
             }
         });
 
-        // 3. Desenho a punho com PointerEvents (Touch, Caneta Stylus de Tablet e Mouse)
+        // ==========================================
+        // MOTOR CALIGRÁFICO DE ALTA FIDELIDADE (Cubic Bézier + Dynamic Ink)
+        // ==========================================
+        var MIN_STROKE_WIDTH = 1.2;
+        var MAX_STROKE_WIDTH = 2.8;
+        var VELOCITY_FILTER_WEIGHT = 0.7;
+        var INK_COLOR = '#0f172a';
+
+        function SigPoint(x, y, time) {
+            this.x = x;
+            this.y = y;
+            this.time = time || Date.now();
+        }
+        SigPoint.prototype.distanceTo = function (start) {
+            return Math.sqrt(Math.pow(this.x - start.x, 2) + Math.pow(this.y - start.y, 2));
+        };
+        SigPoint.prototype.velocityFrom = function (start) {
+            return (this.time !== start.time) ? this.distanceTo(start) / (this.time - start.time) : 0;
+        };
+
+        function calculateCurveControlPoints(s1, s2, s3) {
+            var dx1 = s1.x - s2.x;
+            var dy1 = s1.y - s2.y;
+            var dx2 = s2.x - s3.x;
+            var dy2 = s2.y - s3.y;
+
+            var m1 = { x: (s1.x + s2.x) / 2.0, y: (s1.y + s2.y) / 2.0 };
+            var m2 = { x: (s2.x + s3.x) / 2.0, y: (s2.y + s3.y) / 2.0 };
+
+            var l1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            var l2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+            var dxm = m1.x - m2.x;
+            var dym = m1.y - m2.y;
+
+            var k = (l2 + l1 !== 0) ? l2 / (l1 + l2) : 0;
+            var cm = { x: m2.x + dxm * k, y: m2.y + dym * k };
+
+            var tx = s2.x - cm.x;
+            var ty = s2.y - cm.y;
+
+            return {
+                c1: new SigPoint(m1.x + tx, m1.y + ty),
+                c2: new SigPoint(m2.x + tx, m2.y + ty)
+            };
+        }
+
+        function drawBezierCurve(ctx, p0, c1, c2, p1, startWidth, endWidth) {
+            var widthDelta = endWidth - startWidth;
+            var len = p0.distanceTo(c1) + c1.distanceTo(c2) + c2.distanceTo(p1);
+            var drawSteps = Math.max(Math.floor(len * 2.5), 2);
+
+            ctx.fillStyle = INK_COLOR;
+
+            for (var i = 0; i <= drawSteps; i++) {
+                var t = i / drawSteps;
+                var tt = t * t;
+                var ttt = tt * t;
+                var u = 1 - t;
+                var uu = u * u;
+                var uuu = uu * u;
+
+                var x = uuu * p0.x + 3 * uu * t * c1.x + 3 * u * tt * c2.x + ttt * p1.x;
+                var y = uuu * p0.y + 3 * uu * t * c1.y + 3 * u * tt * c2.y + ttt * p1.y;
+
+                var width = startWidth + t * widthDelta;
+
+                ctx.beginPath();
+                ctx.arc(x, y, width / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function strokeWidthForVelocity(velocity) {
+            return Math.max(MAX_STROKE_WIDTH / (velocity + 1), MIN_STROKE_WIDTH);
+        }
+
         var activeCanvas = null;
         var isDrawing = false;
-        var lastX = 0;
-        var lastY = 0;
+        var sigPoints = [];
+        var lastVelocity = 0;
+        var lastWidth = (MIN_STROKE_WIDTH + MAX_STROKE_WIDTH) / 2;
+
+        function addSigPoint(ctx, newPoint) {
+            sigPoints.push(newPoint);
+
+            if (sigPoints.length > 2) {
+                if (sigPoints.length === 3) {
+                    sigPoints.unshift(sigPoints[0]);
+                }
+
+                var p0 = sigPoints[0];
+                var p1 = sigPoints[1];
+                var p2 = sigPoints[2];
+                var p3 = sigPoints[3];
+
+                var ctrlPoints = calculateCurveControlPoints(p0, p1, p2);
+                var ctrlPoints2 = calculateCurveControlPoints(p1, p2, p3);
+
+                var c1 = ctrlPoints.c2;
+                var c2 = ctrlPoints2.c1;
+
+                var v = p2.velocityFrom(p1);
+                v = VELOCITY_FILTER_WEIGHT * v + (1 - VELOCITY_FILTER_WEIGHT) * lastVelocity;
+
+                var newWidth = strokeWidthForVelocity(v);
+
+                drawBezierCurve(ctx, p1, c1, c2, p2, lastWidth, newWidth);
+
+                lastVelocity = v;
+                lastWidth = newWidth;
+
+                sigPoints.shift();
+            }
+        }
 
         document.addEventListener('pointerdown', function (event) {
             var target = event.target;
+            var clickedDrawBox = target && target.closest ? target.closest('.qform-sig-draw-box') : null;
+
+            // Remove borda azul (.is-active) de qualquer outro drawBox ao perder o foco
+            var activeBoxes = document.querySelectorAll('.qform-sig-draw-box.is-active');
+            for (var i = 0; i < activeBoxes.length; i++) {
+                if (activeBoxes[i] !== clickedDrawBox) {
+                    activeBoxes[i].classList.remove('is-active');
+                }
+            }
+
+            // Se clicou no drawBox (e o overlay já não está na tela), garante foco ativo
+            if (clickedDrawBox) {
+                var ov = clickedDrawBox.querySelector('.qform-sig-overlay');
+                if (!ov || ov.style.display === 'none') {
+                    clickedDrawBox.classList.add('is-active');
+                }
+            }
+
             if (target && target.classList.contains('qform-sig-canvas')) {
                 activeCanvas = target;
                 isDrawing = true;
@@ -300,12 +430,33 @@ var SignatureField = (function () {
                 }
 
                 var rect = target.getBoundingClientRect();
-                lastX = event.clientX - rect.left;
-                lastY = event.clientY - rect.top;
+                var x = event.clientX - rect.left;
+                var y = event.clientY - rect.top;
+
+                sigPoints = [];
+                lastVelocity = 0;
+                lastWidth = (MIN_STROKE_WIDTH + MAX_STROKE_WIDTH) / 2;
+
+                var pt = new SigPoint(x, y, event.timeStamp || Date.now());
+                sigPoints.push(pt);
 
                 var ctx = target.getContext('2d');
+                ctx.fillStyle = INK_COLOR;
                 ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
+                ctx.arc(x, y, lastWidth / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // Perda de foco via teclado (Tab entre campos)
+        document.addEventListener('focusin', function (event) {
+            var target = event.target;
+            var focusedDrawBox = target && target.closest ? target.closest('.qform-sig-draw-box') : null;
+            var activeBoxes = document.querySelectorAll('.qform-sig-draw-box.is-active');
+            for (var i = 0; i < activeBoxes.length; i++) {
+                if (activeBoxes[i] !== focusedDrawBox) {
+                    activeBoxes[i].classList.remove('is-active');
+                }
             }
         });
 
@@ -313,20 +464,41 @@ var SignatureField = (function () {
             if (!isDrawing || !activeCanvas) return;
 
             var rect = activeCanvas.getBoundingClientRect();
-            var currentX = event.clientX - rect.left;
-            var currentY = event.clientY - rect.top;
-
             var ctx = activeCanvas.getContext('2d');
-            ctx.lineTo(currentX, currentY);
-            ctx.stroke();
 
-            lastX = currentX;
-            lastY = currentY;
+            // Usa eventos coalescidos do hardware se suportado pelo navegador (120Hz-240Hz)
+            var events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+
+            for (var j = 0; j < events.length; j++) {
+                var ev = events[j];
+                var x = ev.clientX - rect.left;
+                var y = ev.clientY - rect.top;
+
+                var lastPt = sigPoints[sigPoints.length - 1];
+                if (lastPt) {
+                    var dx = x - lastPt.x;
+                    var dy = y - lastPt.y;
+                    if (dx * dx + dy * dy < 1.5) continue;
+                }
+
+                var newPt = new SigPoint(x, y, ev.timeStamp || Date.now());
+                addSigPoint(ctx, newPt);
+            }
         });
 
         function finalizarDesenho() {
             if (!isDrawing || !activeCanvas) return;
             isDrawing = false;
+
+            var ctx = activeCanvas.getContext('2d');
+
+            // Conclui o último segmento de ponto pendente se houver
+            if (sigPoints.length > 1) {
+                var p1 = sigPoints[sigPoints.length - 2];
+                var p2 = sigPoints[sigPoints.length - 1];
+                drawBezierCurve(ctx, p1, p1, p2, p2, lastWidth, lastWidth);
+            }
+            sigPoints = [];
 
             var drawBox = activeCanvas.closest('.qform-sig-draw-box');
             if (drawBox) {
