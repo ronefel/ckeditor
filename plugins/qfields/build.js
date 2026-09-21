@@ -16,6 +16,16 @@ const outputFile = path.join(baseDir, 'render_qfields.js');
  * Descobre dinamicamente todos os módulos em src/core e src/fields
  */
 function getFilesToBundle() {
+    // 0. Bibliotecas vendor (ex: czSignature.js)
+    const vendorDir = path.join(srcDir, 'vendor');
+    let vendorFiles = [];
+    if (fs.existsSync(vendorDir)) {
+        vendorFiles = fs.readdirSync(vendorDir)
+            .filter(f => f.endsWith('.js'))
+            .sort()
+            .map(f => path.join(vendorDir, f));
+    }
+
     // 1. Módulos do core (garante que registry.js execute antes de renderer.js)
     const coreDir = path.join(srcDir, 'core');
     const coreFiles = fs.readdirSync(coreDir)
@@ -38,8 +48,9 @@ function getFilesToBundle() {
     const indexFile = path.join(srcDir, 'index.js');
 
     return {
-        allFiles: [...coreFiles, ...fieldFiles, indexFile],
-        fieldNames: fieldFiles.map(f => path.basename(f, '.js'))
+        allFiles: [...vendorFiles, ...coreFiles, ...fieldFiles, indexFile],
+        fieldNames: fieldFiles.map(f => path.basename(f, '.js')),
+        vendorNames: vendorFiles.map(f => path.basename(f, '.js'))
     };
 }
 

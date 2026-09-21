@@ -290,8 +290,6 @@ body.document-contents,
 	max-width: 100%;
 	cursor: pointer;
 	user-select: none;
-	font-family: inherit;
-	font-size: inherit;
 	transition: all 0.2s ease;
 }
 
@@ -540,8 +538,6 @@ body.document-contents,
 
 .document-contents .qfield-widget.qfield-signature-styled .qfield-signature-title {
 	display: block;
-	font-size: 12px;
-	color: #475569;
 	text-align: center;
 	white-space: nowrap;
 	overflow: hidden;

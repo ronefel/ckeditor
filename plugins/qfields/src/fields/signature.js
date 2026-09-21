@@ -31,8 +31,8 @@ var SignatureField = (function () {
         '.qform-sig-btn-clear:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }' +
         '.qform-sig-line-container { display: block; width: 100%; box-sizing: border-box; }' +
         '.qform-sig-draw-box .qform-sig-line-container { position: absolute; bottom: 8px; left: 12px; right: 12px; width: auto; pointer-events: none; z-index: 1; }' +
-        '.qform-sig-line { display: block; border-bottom: 1.5px solid #475569; width: 100%; margin-bottom: 3px; }' +
-        '.qform-sig-label { display: block; font-size: 12px; color: #475569; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }';
+        '.qform-sig-line { display: block; border-bottom: 1.5px solid #000000; width: 100%; margin-bottom: 3px; }' +
+        '.qform-sig-label { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }';
 
     function render(campo, options) {
         var name = campo.getAttribute('data-qfield-name') || 'campo';
@@ -192,25 +192,38 @@ var SignatureField = (function () {
                     if (canvas) {
                         canvas.style.display = 'block';
 
-                        // Inicializa dimensões de alta definição (Retina / Mobile / Tablet com supersampling 2x mínimo)
                         var rect = canvas.getBoundingClientRect();
-                        var dpr = Math.max(window.devicePixelRatio || 1, 2);
                         var w = drawBox.clientWidth || Math.max(Math.round(rect.width), 100);
                         var h = drawBox.clientHeight || Math.max(Math.round(rect.height), 60);
 
-                        canvas.width = Math.round(w * dpr);
-                        canvas.height = Math.round(h * dpr);
                         canvas.style.width = w + 'px';
                         canvas.style.height = h + 'px';
 
-                        var ctx = canvas.getContext('2d');
-                        ctx.imageSmoothingEnabled = true;
-                        ctx.imageSmoothingQuality = 'high';
-                        ctx.scale(dpr, dpr);
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        ctx.strokeStyle = '#0f172a';
-                        ctx.lineWidth = 2.2;
+                        if (!canvas._sigPad && typeof czSignature !== 'undefined') {
+                            var hiddenVal = drawBox.querySelector('.qform-sig-hidden-val');
+                            canvas._sigPad = new czSignature(canvas, {
+                                penColor: '#000000',
+                                backgroundColor: 'transparent',
+                                minWidth: 1,
+                                maxWidth: 3.0,
+                                velocitySensitivity: 3.0,
+                                taperStart: 2,
+                                taperEnd: 2,
+                                pressureSupport: false,
+                                smoothingMode: 'live',
+                                smoothingRatio: 0.5,
+                                minDistance: 0.8,
+                                smoothingFadePoints: 4,
+                                trimOutput: false
+                            });
+                            canvas._sigPad.on('drawEnd', function () {
+                                if (hiddenVal) {
+                                    hiddenVal.value = canvas._sigPad.toDataURL('image/png');
+                                    hiddenVal.dispatchEvent(new Event('input', { bubbles: true }));
+                                    hiddenVal.dispatchEvent(new Event('change', { bubbles: true }));
+                                }
+                            });
+                        }
                     }
                 }
                 return;
@@ -222,7 +235,9 @@ var SignatureField = (function () {
                 if (drawBox) {
                     var canvas = drawBox.querySelector('.qform-sig-canvas');
                     var hiddenVal = drawBox.querySelector('.qform-sig-hidden-val');
-                    if (canvas) {
+                    if (canvas && canvas._sigPad) {
+                        canvas._sigPad.clear();
+                    } else if (canvas) {
                         var ctx = canvas.getContext('2d');
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                     }
@@ -286,127 +301,11 @@ var SignatureField = (function () {
             }
         });
 
-        // ==========================================
-        // MOTOR CALIGRÁFICO DE ALTA FIDELIDADE (Cubic Bézier + Dynamic Ink)
-        // ==========================================
-        var MIN_STROKE_WIDTH = 1.2;
-        var MAX_STROKE_WIDTH = 2.8;
-        var VELOCITY_FILTER_WEIGHT = 0.7;
-        var INK_COLOR = '#0f172a';
-
-        function SigPoint(x, y, time) {
-            this.x = x;
-            this.y = y;
-            this.time = time || Date.now();
-        }
-        SigPoint.prototype.distanceTo = function (start) {
-            return Math.sqrt(Math.pow(this.x - start.x, 2) + Math.pow(this.y - start.y, 2));
-        };
-        SigPoint.prototype.velocityFrom = function (start) {
-            return (this.time !== start.time) ? this.distanceTo(start) / (this.time - start.time) : 0;
-        };
-
-        function calculateCurveControlPoints(s1, s2, s3) {
-            var dx1 = s1.x - s2.x;
-            var dy1 = s1.y - s2.y;
-            var dx2 = s2.x - s3.x;
-            var dy2 = s2.y - s3.y;
-
-            var m1 = { x: (s1.x + s2.x) / 2.0, y: (s1.y + s2.y) / 2.0 };
-            var m2 = { x: (s2.x + s3.x) / 2.0, y: (s2.y + s3.y) / 2.0 };
-
-            var l1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-            var l2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-            var dxm = m1.x - m2.x;
-            var dym = m1.y - m2.y;
-
-            var k = (l2 + l1 !== 0) ? l2 / (l1 + l2) : 0;
-            var cm = { x: m2.x + dxm * k, y: m2.y + dym * k };
-
-            var tx = s2.x - cm.x;
-            var ty = s2.y - cm.y;
-
-            return {
-                c1: new SigPoint(m1.x + tx, m1.y + ty),
-                c2: new SigPoint(m2.x + tx, m2.y + ty)
-            };
-        }
-
-        function drawBezierCurve(ctx, p0, c1, c2, p1, startWidth, endWidth) {
-            var widthDelta = endWidth - startWidth;
-            var len = p0.distanceTo(c1) + c1.distanceTo(c2) + c2.distanceTo(p1);
-            var drawSteps = Math.max(Math.floor(len * 2.5), 2);
-
-            ctx.fillStyle = INK_COLOR;
-
-            for (var i = 0; i <= drawSteps; i++) {
-                var t = i / drawSteps;
-                var tt = t * t;
-                var ttt = tt * t;
-                var u = 1 - t;
-                var uu = u * u;
-                var uuu = uu * u;
-
-                var x = uuu * p0.x + 3 * uu * t * c1.x + 3 * u * tt * c2.x + ttt * p1.x;
-                var y = uuu * p0.y + 3 * uu * t * c1.y + 3 * u * tt * c2.y + ttt * p1.y;
-
-                var width = startWidth + t * widthDelta;
-
-                ctx.beginPath();
-                ctx.arc(x, y, width / 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function strokeWidthForVelocity(velocity) {
-            return Math.max(MAX_STROKE_WIDTH / (velocity + 1), MIN_STROKE_WIDTH);
-        }
-
-        var activeCanvas = null;
-        var isDrawing = false;
-        var sigPoints = [];
-        var lastVelocity = 0;
-        var lastWidth = (MIN_STROKE_WIDTH + MAX_STROKE_WIDTH) / 2;
-
-        function addSigPoint(ctx, newPoint) {
-            sigPoints.push(newPoint);
-
-            if (sigPoints.length > 2) {
-                if (sigPoints.length === 3) {
-                    sigPoints.unshift(sigPoints[0]);
-                }
-
-                var p0 = sigPoints[0];
-                var p1 = sigPoints[1];
-                var p2 = sigPoints[2];
-                var p3 = sigPoints[3];
-
-                var ctrlPoints = calculateCurveControlPoints(p0, p1, p2);
-                var ctrlPoints2 = calculateCurveControlPoints(p1, p2, p3);
-
-                var c1 = ctrlPoints.c2;
-                var c2 = ctrlPoints2.c1;
-
-                var v = p2.velocityFrom(p1);
-                v = VELOCITY_FILTER_WEIGHT * v + (1 - VELOCITY_FILTER_WEIGHT) * lastVelocity;
-
-                var newWidth = strokeWidthForVelocity(v);
-
-                drawBezierCurve(ctx, p1, c1, c2, p2, lastWidth, newWidth);
-
-                lastVelocity = v;
-                lastWidth = newWidth;
-
-                sigPoints.shift();
-            }
-        }
-
+        // Gerenciamento de foco ativo (.is-active)
         document.addEventListener('pointerdown', function (event) {
             var target = event.target;
             var clickedDrawBox = target && target.closest ? target.closest('.qform-sig-draw-box') : null;
 
-            // Remove borda azul (.is-active) de qualquer outro drawBox ao perder o foco
             var activeBoxes = document.querySelectorAll('.qform-sig-draw-box.is-active');
             for (var i = 0; i < activeBoxes.length; i++) {
                 if (activeBoxes[i] !== clickedDrawBox) {
@@ -414,41 +313,14 @@ var SignatureField = (function () {
                 }
             }
 
-            // Se clicou no drawBox (e o overlay já não está na tela), garante foco ativo
             if (clickedDrawBox) {
                 var ov = clickedDrawBox.querySelector('.qform-sig-overlay');
                 if (!ov || ov.style.display === 'none') {
                     clickedDrawBox.classList.add('is-active');
                 }
             }
-
-            if (target && target.classList.contains('qform-sig-canvas')) {
-                activeCanvas = target;
-                isDrawing = true;
-                if (target.setPointerCapture) {
-                    try { target.setPointerCapture(event.pointerId); } catch (e) { }
-                }
-
-                var rect = target.getBoundingClientRect();
-                var x = event.clientX - rect.left;
-                var y = event.clientY - rect.top;
-
-                sigPoints = [];
-                lastVelocity = 0;
-                lastWidth = (MIN_STROKE_WIDTH + MAX_STROKE_WIDTH) / 2;
-
-                var pt = new SigPoint(x, y, event.timeStamp || Date.now());
-                sigPoints.push(pt);
-
-                var ctx = target.getContext('2d');
-                ctx.fillStyle = INK_COLOR;
-                ctx.beginPath();
-                ctx.arc(x, y, lastWidth / 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
         });
 
-        // Perda de foco via teclado (Tab entre campos)
         document.addEventListener('focusin', function (event) {
             var target = event.target;
             var focusedDrawBox = target && target.closest ? target.closest('.qform-sig-draw-box') : null;
@@ -459,61 +331,6 @@ var SignatureField = (function () {
                 }
             }
         });
-
-        document.addEventListener('pointermove', function (event) {
-            if (!isDrawing || !activeCanvas) return;
-
-            var rect = activeCanvas.getBoundingClientRect();
-            var ctx = activeCanvas.getContext('2d');
-
-            // Usa eventos coalescidos do hardware se suportado pelo navegador (120Hz-240Hz)
-            var events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
-
-            for (var j = 0; j < events.length; j++) {
-                var ev = events[j];
-                var x = ev.clientX - rect.left;
-                var y = ev.clientY - rect.top;
-
-                var lastPt = sigPoints[sigPoints.length - 1];
-                if (lastPt) {
-                    var dx = x - lastPt.x;
-                    var dy = y - lastPt.y;
-                    if (dx * dx + dy * dy < 1.5) continue;
-                }
-
-                var newPt = new SigPoint(x, y, ev.timeStamp || Date.now());
-                addSigPoint(ctx, newPt);
-            }
-        });
-
-        function finalizarDesenho() {
-            if (!isDrawing || !activeCanvas) return;
-            isDrawing = false;
-
-            var ctx = activeCanvas.getContext('2d');
-
-            // Conclui o último segmento de ponto pendente se houver
-            if (sigPoints.length > 1) {
-                var p1 = sigPoints[sigPoints.length - 2];
-                var p2 = sigPoints[sigPoints.length - 1];
-                drawBezierCurve(ctx, p1, p1, p2, p2, lastWidth, lastWidth);
-            }
-            sigPoints = [];
-
-            var drawBox = activeCanvas.closest('.qform-sig-draw-box');
-            if (drawBox) {
-                var hiddenVal = drawBox.querySelector('.qform-sig-hidden-val');
-                if (hiddenVal) {
-                    hiddenVal.value = activeCanvas.toDataURL('image/png');
-                    hiddenVal.dispatchEvent(new Event('input', { bubbles: true }));
-                    hiddenVal.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }
-            activeCanvas = null;
-        }
-
-        document.addEventListener('pointerup', finalizarDesenho);
-        document.addEventListener('pointercancel', finalizarDesenho);
 
         // 4. Redimensionamento interativo de imagem de assinatura (alça SE-resize)
         var resizerOverlay = null;
