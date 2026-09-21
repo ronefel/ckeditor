@@ -21,15 +21,16 @@ var SignatureField = (function () {
         '.qform-btn-sign.qform-btn-signed:hover { background-color: #e2e8f0; }' +
         '.qform-sig-preview-img { display: inline-block; max-width: 100%; max-height: 100%; border: 1px dashed #cbd5e1; border-radius: 4px; background-color: #fff; cursor: pointer; box-sizing: border-box; }' +
         '.qform-signature-draw-wrapper { display: inline-block; vertical-align: top; }' +
-        '.qform-sig-draw-box { display: block; position: relative; background-color: transparent; border: 1.5px dashed #94a3b8; box-sizing: border-box; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }' +
+        '.qform-sig-draw-box { display: block; position: relative; background-color: transparent; border: 1.5px dashed #94a3b8; border-radius: 6px; box-sizing: border-box; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }' +
         '.qform-sig-draw-box.is-active { border-style: solid; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }' +
-        '.qform-sig-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none; z-index: 2; transition: background 0.15s; box-sizing: border-box; }' +
+        '.qform-sig-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none; z-index: 3; transition: background 0.15s; box-sizing: border-box; padding-bottom: 24px; }' +
         '.qform-sig-overlay-icon { font-size: 18px; }' +
-        '.qform-sig-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }' +
+        '.qform-sig-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; position: absolute; top: 0; left: 0; z-index: 2; background: transparent; }' +
         '.qform-sig-toolbar { position: absolute; top: 6px; right: 6px; display: flex; gap: 6px; z-index: 4; }' +
         '.qform-sig-btn-clear { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); transition: all 0.15s; }' +
         '.qform-sig-btn-clear:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }' +
         '.qform-sig-line-container { display: block; width: 100%; box-sizing: border-box; }' +
+        '.qform-sig-draw-box .qform-sig-line-container { position: absolute; bottom: 8px; left: 12px; right: 12px; width: auto; pointer-events: none; z-index: 1; }' +
         '.qform-sig-line { display: block; border-bottom: 1.5px solid #475569; width: 100%; margin-bottom: 3px; }' +
         '.qform-sig-label { display: block; font-size: 12px; color: #475569; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }';
 
@@ -73,6 +74,7 @@ var SignatureField = (function () {
             var previewImg = document.createElement('img');
             previewImg.className = 'qform-sig-preview-img';
             previewImg.alt = sigLabelText;
+            previewImg.title = 'Duplo clique para alterar a assinatura';
             previewImg.style.display = 'none';
             if (width && width !== 'auto' && width !== '100%') previewImg.style.maxWidth = width;
             if (height && height !== 'auto') previewImg.style.maxHeight = height;
@@ -133,11 +135,6 @@ var SignatureField = (function () {
             hiddenVal.className = 'qform-sig-hidden-val';
             if (isRequired) hiddenVal.required = true;
 
-            drawBox.appendChild(overlay);
-            drawBox.appendChild(canvas);
-            drawBox.appendChild(toolbar);
-            drawBox.appendChild(hiddenVal);
-
             var lineArea = document.createElement('span');
             if (sigLabelText) {
                 lineArea.className = 'qform-sig-line-container';
@@ -145,10 +142,15 @@ var SignatureField = (function () {
                     (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</span>';
             }
 
-            sigContainer.appendChild(drawBox);
+            drawBox.appendChild(overlay);
+            drawBox.appendChild(canvas);
+            drawBox.appendChild(toolbar);
+            drawBox.appendChild(hiddenVal);
             if (sigLabelText) {
-                sigContainer.appendChild(lineArea);
+                drawBox.appendChild(lineArea);
             }
+
+            sigContainer.appendChild(drawBox);
         }
 
         return sigContainer;
@@ -193,8 +195,8 @@ var SignatureField = (function () {
                         // Inicializa dimensões de alta definição (Retina / Mobile / Tablet)
                         var rect = canvas.getBoundingClientRect();
                         var dpr = window.devicePixelRatio || 1;
-                        var w = Math.max(Math.round(rect.width), 100);
-                        var h = Math.max(Math.round(rect.height), 60);
+                        var w = drawBox.clientWidth || Math.max(Math.round(rect.width), 100);
+                        var h = drawBox.clientHeight || Math.max(Math.round(rect.height), 60);
 
                         canvas.width = Math.round(w * dpr);
                         canvas.height = Math.round(h * dpr);
@@ -250,6 +252,7 @@ var SignatureField = (function () {
                             if (previewImg) {
                                 previewImg.src = dataUrl;
                                 previewImg.style.display = 'inline-block';
+                                previewImg.title = 'Duplo clique para alterar a assinatura';
                             }
                             if (hiddenVal) {
                                 hiddenVal.value = dataUrl;
@@ -257,11 +260,25 @@ var SignatureField = (function () {
                                 hiddenVal.dispatchEvent(new Event('change', { bubbles: true }));
                             }
                             if (btnSign) {
-                                btnSign.textContent = 'Alterar Assinatura';
-                                btnSign.classList.add('qform-btn-signed');
+                                btnSign.style.display = 'none';
                             }
                         };
                         reader.readAsDataURL(file);
+                    }
+                }
+            }
+        });
+
+        // 2b. Duplo clique na imagem de assinatura para alterar
+        document.addEventListener('dblclick', function (event) {
+            var target = event.target;
+            if (target && target.classList.contains('qform-sig-preview-img')) {
+                var uploadBox = target.closest('.qform-sig-upload-box');
+                if (uploadBox) {
+                    var fileInput = uploadBox.querySelector('.qform-sig-file-input');
+                    if (fileInput) {
+                        ocultarResizer();
+                        fileInput.click();
                     }
                 }
             }
