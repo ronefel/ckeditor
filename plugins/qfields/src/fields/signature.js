@@ -50,7 +50,7 @@ var SignatureField = (function () {
         sigContainer.style.display = (width === '100%') ? 'block' : 'inline-block';
         sigContainer.style.verticalAlign = 'top';
 
-        var sigLabelText = label || placeholder || name || 'Assinatura';
+        var sigLabelText = label || placeholder || '';
 
         if (sigMode === 'upload') {
             sigContainer.classList.add('qform-signature-upload-wrapper');
@@ -83,9 +83,11 @@ var SignatureField = (function () {
             if (isRequired) hiddenVal.required = true;
 
             var lineArea = document.createElement('div');
-            lineArea.className = 'qform-sig-line-container';
-            lineArea.innerHTML = '<div class="qform-sig-line"></div><div class="qform-sig-label">' +
-                (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</div>';
+            if (sigLabelText) {
+                lineArea.className = 'qform-sig-line-container';
+                lineArea.innerHTML = '<div class="qform-sig-line"></div><div class="qform-sig-label">' +
+                    (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</div>';
+            }
 
             uploadBox.appendChild(btnSign);
             uploadBox.appendChild(fileInput);
