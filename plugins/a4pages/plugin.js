@@ -69,6 +69,16 @@
                     ajustarFluxoPaginas(editor);
                 }, 100);
             });
+
+            // Dispara ajuste imediato ao inserir Quebra de Página via barra de ferramentas
+            editor.on('afterCommandExec', function (evt) {
+                if (!editorSuportaA4Pages(editor)) return;
+                if (evt.data && evt.data.name === 'pagebreak') {
+                    setTimeout(function () {
+                        ajustarFluxoPaginas(editor);
+                    }, 20);
+                }
+            });
         }
     });
 
@@ -125,6 +135,84 @@
     }
 
     /**
+     * Verifica se um elemento é uma quebra de página (PageBreak do CKEditor ou CSS page-break)
+     */
+    function isQuebraDePagina(el) {
+        if (!el || el.type !== CKEDITOR.NODE_ELEMENT) return false;
+        if (el.hasClass && (el.hasClass('cke_pagebreak') || el.hasClass('cke_pagebreak_clock'))) return true;
+        if (el.getAttribute && (el.getAttribute('data-cke-pagebreak') || el.getAttribute('data-cke-display-name') === 'pagebreak')) return true;
+        var style = el.getAttribute ? (el.getAttribute('style') || '') : '';
+        if (/page-break-(after|before)\s*:\s*always/i.test(style) || /break-(after|before)\s*:\s*page/i.test(style)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Localiza o primeiro elemento de quebra de página dentro de uma folha A4
+     */
+    function obterElementoQuebra(folha) {
+        if (!folha || !folha.find) return null;
+        var quebras = folha.find('.cke_pagebreak, [data-cke-pagebreak], div[style*="page-break-after"], div[style*="break-after"]');
+        for (var i = 0; i < quebras.count(); i++) {
+            var q = quebras.getItem(i);
+            if (isQuebraDePagina(q)) {
+                return q;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Garante que o elemento de quebra seja um filho direto de bloco da folha
+     */
+    function normalizarQuebraNaFolha(folha, quebra) {
+        if (!folha || !quebra || !quebra.getParent) return quebra;
+        var pai = quebra.getParent();
+        if (!pai || pai.equals(folha)) {
+            return quebra;
+        }
+
+        var blocoAncestral = quebra;
+        while (blocoAncestral.getParent && !blocoAncestral.getParent().equals(folha)) {
+            blocoAncestral = blocoAncestral.getParent();
+        }
+
+        if (blocoAncestral && blocoAncestral.getParent && blocoAncestral.getParent().equals(folha)) {
+            var nosAposNaAncestral = [];
+            var irmao = quebra.getNext();
+            while (irmao) {
+                var g = irmao.getNext();
+                nosAposNaAncestral.push(irmao);
+                irmao = g;
+            }
+
+            quebra.insertAfter(blocoAncestral);
+
+            if (nosAposNaAncestral.length > 0) {
+                var novoBlocoApos = new CKEDITOR.dom.element(blocoAncestral.getName() || 'p');
+                for (var n = 0; n < nosAposNaAncestral.length; n++) {
+                    novoBlocoApos.append(nosAposNaAncestral[n]);
+                }
+                novoBlocoApos.insertAfter(quebra);
+            }
+        }
+        return quebra;
+    }
+
+    /**
+     * Retorna o bloco filho direto da folha correspondente à quebra
+     */
+    function obterBlocoDiretoQuebra(folha, quebra) {
+        if (!folha || !quebra) return null;
+        var el = quebra;
+        while (el && el.getParent && !el.getParent().equals(folha)) {
+            el = el.getParent();
+        }
+        return el;
+    }
+
+    /**
      * Garante que todo o conteúdo esteja encapsulado em .folha-a4
      */
     function garantirEstruturaA4(editor) {
@@ -162,6 +250,21 @@
             if (child.hasClass && child.hasClass('folha-a4')) {
                 ultimaFolha = child;
             } else if (child.getName && child.getName() !== 'script' && child.getName() !== 'style') {
+                if (isQuebraDePagina(child)) {
+                    if (ultimaFolha) {
+                        ultimaFolha.append(child);
+                    } else {
+                        var proxFolha = child.getNext(function (n) {
+                            return n.hasClass && n.hasClass('folha-a4');
+                        });
+                        if (proxFolha) {
+                            var prim = proxFolha.getFirst();
+                            if (prim) child.insertBefore(prim);
+                            else proxFolha.append(child);
+                        }
+                    }
+                    continue;
+                }
                 var texto = child.getText ? child.getText().trim() : '';
                 var html = child.getHtml ? child.getHtml().trim() : '';
                 if (!texto || texto === '' || html === '<br>' || html === '&nbsp;' || html === '') {
@@ -236,8 +339,9 @@
      */
     function isElementoVazio(el) {
         if (!el || el.type !== CKEDITOR.NODE_ELEMENT) return true;
+        if (isQuebraDePagina(el)) return false;
         // Se tiver widgets ou elementos visuais de formulário/mídia, não está vazio
-        if (el.find && el.find('.qfield-widget, img, table, iframe, hr, input, select, button').count() > 0) {
+        if (el.find && el.find('.qfield-widget, .cke_pagebreak, [data-cke-pagebreak], img, table, iframe, hr, input, select, button').count() > 0) {
             return false;
         }
         var texto = el.getText ? el.getText() : '';
@@ -251,7 +355,8 @@
      */
     function isFolhaVazia(folha) {
         if (!folha || !folha.find) return true;
-        if (folha.find('.qfield-widget, img, table, iframe, hr, input, select, button').count() > 0) {
+        if (obterElementoQuebra(folha)) return false;
+        if (folha.find('.qfield-widget, .cke_pagebreak, [data-cke-pagebreak], img, table, iframe, hr, input, select, button').count() > 0) {
             return false;
         }
         var texto = folha.getText ? folha.getText() : '';
@@ -364,12 +469,94 @@
 
             var houveMudanca = false;
             var cursorMovidoParaElemento = null;
+            var cursorMoverParaInicio = false;
             var folhas = body.find('.folha-a4');
 
-            // 1. FLUXO DIRETO (PUSH): Transborda elementos excedentes para a próxima página
+            // 1. FLUXO DIRETO (PUSH): Trata quebras de página manuais e transborda elementos excedentes
             for (var i = 0; i < folhas.count(); i++) {
                 var folha = folhas.getItem(i);
                 if (!folha || !folha.$) continue;
+
+                // --- Trata Quebra de Página Manual ---
+                var quebra = obterElementoQuebra(folha);
+                if (quebra) {
+                    quebra = normalizarQuebraNaFolha(folha, quebra);
+                    var blocoQuebra = obterBlocoDiretoQuebra(folha, quebra);
+
+                    // Pega todos os irmãos posteriores à quebra nesta folha
+                    var elementosAposQuebra = [];
+                    var prox = blocoQuebra ? blocoQuebra.getNext() : null;
+                    while (prox) {
+                        var guardaSiguiente = prox.getNext();
+                        elementosAposQuebra.push(prox);
+                        prox = guardaSiguiente;
+                    }
+
+                    // Encontra ou cria a próxima folha A4
+                    var proximaFolhaQuebra = folha.getNext(function (node) {
+                        return node.hasClass && node.hasClass('folha-a4');
+                    });
+
+                    if (!proximaFolhaQuebra) {
+                        proximaFolhaQuebra = new CKEDITOR.dom.element('div');
+                        proximaFolhaQuebra.addClass('folha-a4');
+                        aplicarMargensPersonalizadas(proximaFolhaQuebra, editor);
+                        if (folha && folha.$ && folha.$.parentNode) {
+                            proximaFolhaQuebra.insertAfter(folha);
+                        } else {
+                            body.append(proximaFolhaQuebra);
+                        }
+                        folhas = body.find('.folha-a4'); // Atualiza a lista
+                    }
+
+                    if (elementosAposQuebra.length > 0) {
+                        houveMudanca = true;
+                        // Se a folha seguinte continha apenas um parágrafo vazio/bogus, limpa antes de inserir
+                        if (isFolhaVazia(proximaFolhaQuebra)) {
+                            proximaFolhaQuebra.setHtml('');
+                        }
+
+                        var primeiroDaProximaQuebra = proximaFolhaQuebra.getFirst();
+                        for (var k = 0; k < elementosAposQuebra.length; k++) {
+                            var elParaMoverQ = elementosAposQuebra[k];
+                            var cursorNesteQ = elAtivo && (elAtivo.equals(elParaMoverQ) || elParaMoverQ.contains(elAtivo));
+
+                            if (primeiroDaProximaQuebra) {
+                                elParaMoverQ.insertBefore(primeiroDaProximaQuebra);
+                            } else {
+                                proximaFolhaQuebra.append(elParaMoverQ);
+                            }
+
+                            if (cursorNesteQ) {
+                                cursorMovidoParaElemento = elParaMoverQ;
+                                cursorMoverParaInicio = false;
+                            }
+                        }
+                    } else {
+                        // Não há elementos após a quebra.
+                        // Garante que a próxima folha tenha pelo menos um bloco editável
+                        var qtdFilhosProximaQ = 0;
+                        var chProxQ = proximaFolhaQuebra.getChildren();
+                        for (var cp = 0; cp < chProxQ.count(); cp++) {
+                            if (chProxQ.getItem(cp).type === CKEDITOR.NODE_ELEMENT) qtdFilhosProximaQ++;
+                        }
+                        if (qtdFilhosProximaQ === 0) {
+                            var pVazioQ = new CKEDITOR.dom.element('p');
+                            pVazioQ.appendBogus();
+                            proximaFolhaQuebra.append(pVazioQ);
+                            houveMudanca = true;
+                        }
+
+                        // Se o cursor estiver na quebra, posiciona no início da próxima página
+                        if (elAtivo && (elAtivo.equals(quebra) || quebra.contains(elAtivo) || (blocoQuebra && (elAtivo.equals(blocoQuebra) || blocoQuebra.contains(elAtivo))))) {
+                            var primBlocoProxQ = proximaFolhaQuebra.getFirst(function (n) { return n.type === CKEDITOR.NODE_ELEMENT; });
+                            if (primBlocoProxQ) {
+                                cursorMovidoParaElemento = primBlocoProxQ;
+                                cursorMoverParaInicio = true;
+                            }
+                        }
+                    }
+                }
 
                 var limiteSeguranca = 50; // Proteção contra loop infinito
                 while (limiteSeguranca > 0) {
@@ -426,6 +613,7 @@
                     // Se o cursor estava neste elemento, registra para reposicionar na nova folha
                     if (cursorNesteElemento) {
                         cursorMovidoParaElemento = ultimoFilho;
+                        cursorMoverParaInicio = false;
                     }
                 }
             }
@@ -438,6 +626,11 @@
                     return node.hasClass && node.hasClass('folha-a4');
                 });
                 if (!folhaSeguinte) continue;
+
+                // Se a folha atual contém uma quebra de página, nada da folha seguinte pode voltar!
+                if (obterElementoQuebra(folhaAtual)) {
+                    continue;
+                }
 
                 var limitePull = 20;
                 while (limitePull > 0) {
@@ -476,6 +669,7 @@
 
                     if (cursorNoItem) {
                         cursorMovidoParaElemento = primeiroDaSeguinte;
+                        cursorMoverParaInicio = false;
                     }
                 }
             }
@@ -488,6 +682,14 @@
 
                 // NUNCA remova a folha ativa onde o usuário está
                 if (folhaAtiva && folhaAtiva.equals(f)) continue;
+
+                // Se a folha anterior possui uma quebra de página, esta folha DEVE ser mantida!
+                var folhaAnteriorQ = f.getPrevious(function (node) {
+                    return node.hasClass && node.hasClass('folha-a4');
+                });
+                if (folhaAnteriorQ && obterElementoQuebra(folhaAnteriorQ)) {
+                    continue;
+                }
 
                 // Conta quantos blocos existem dentro da folha
                 var qtdFilhosBlocos = 0;
@@ -509,7 +711,11 @@
                 if (cursorMovidoParaElemento) {
                     try {
                         var r = editor.createRange();
-                        r.moveToElementEditEnd(cursorMovidoParaElemento);
+                        if (cursorMoverParaInicio) {
+                            r.moveToElementEditStart(cursorMovidoParaElemento);
+                        } else {
+                            r.moveToElementEditEnd(cursorMovidoParaElemento);
+                        }
                         r.select();
                         // cursorMovidoParaElemento.scrollIntoView();
                     } catch (e) { }
@@ -613,6 +819,27 @@
                                 if (!folhaAnterior) {
                                     // Na Página 1, no início absoluto: cancela o backspace para não sair da folha
                                     evt.cancel();
+                                    return;
+                                }
+
+                                // Se a folha anterior tem quebra de página:
+                                var quebraAnt = obterElementoQuebra(folhaAnterior);
+                                if (quebraAnt) {
+                                    evt.cancel();
+                                    quebraAnt.remove();
+                                    ajustarFluxoPaginas(editor);
+
+                                    // Move o cursor para o final da folha anterior
+                                    var ultBlocoAntQ = folhaAnterior.getLast(function (n) {
+                                        return n.type === CKEDITOR.NODE_ELEMENT;
+                                    });
+                                    var rFimQ = editor.createRange();
+                                    if (ultBlocoAntQ) {
+                                        rFimQ.moveToElementEditEnd(ultBlocoAntQ);
+                                    } else {
+                                        rFimQ.moveToPosition(folhaAnterior, CKEDITOR.POSITION_BEFORE_END);
+                                    }
+                                    rFimQ.select();
                                     return;
                                 }
 

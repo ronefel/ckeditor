@@ -11,28 +11,27 @@ var SignatureField = (function () {
     'use strict';
 
     var styles = '' +
-        '.qform-signature-wrapper { box-sizing: border-box; margin: 4px 0; font-family: inherit; }' +
-        '.qform-signature-upload-wrapper { display: inline-block; }' +
-        '.qform-sig-upload-box { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }' +
+        '.qform-signature-wrapper { display: inline-block; vertical-align: top; box-sizing: border-box; font-family: inherit; text-align: left; }' +
+        '.qform-signature-upload-wrapper { display: inline-block; vertical-align: top; }' +
+        '.qform-sig-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box; overflow: hidden; }' +
         '.qform-btn-sign { background-color: #2563eb; color: #ffffff; border: none; padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; display: inline-flex; align-items: center; gap: 6px; }' +
         '.qform-btn-sign:hover { background-color: #1d4ed8; }' +
         '.qform-btn-sign:active { transform: scale(0.98); }' +
         '.qform-btn-sign.qform-btn-signed { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }' +
         '.qform-btn-sign.qform-btn-signed:hover { background-color: #e2e8f0; }' +
-        '.qform-sig-preview-img { display: inline-block; max-width: 100%; border: 1px dashed #cbd5e1; border-radius: 4px; background-color: #fff; cursor: pointer; box-sizing: border-box; }' +
-        '.qform-signature-draw-wrapper { display: inline-block; }' +
-        '.qform-sig-draw-box { position: relative; background-color: #ffffff; border: 1.5px dashed #94a3b8; border-radius: 6px; box-sizing: border-box; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }' +
+        '.qform-sig-preview-img { display: inline-block; max-width: 100%; max-height: 100%; border: 1px dashed #cbd5e1; border-radius: 4px; background-color: #fff; cursor: pointer; box-sizing: border-box; }' +
+        '.qform-signature-draw-wrapper { display: inline-block; vertical-align: top; }' +
+        '.qform-sig-draw-box { display: block; position: relative; background-color: transparent; border: 1.5px dashed #94a3b8; box-sizing: border-box; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }' +
         '.qform-sig-draw-box.is-active { border-style: solid; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }' +
-        '.qform-sig-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f8fafc; color: #475569; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none; z-index: 2; transition: background 0.15s; }' +
-        '.qform-sig-overlay:hover { background: #f1f5f9; color: #1e293b; }' +
+        '.qform-sig-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none; z-index: 2; transition: background 0.15s; box-sizing: border-box; }' +
         '.qform-sig-overlay-icon { font-size: 18px; }' +
         '.qform-sig-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }' +
         '.qform-sig-toolbar { position: absolute; top: 6px; right: 6px; display: flex; gap: 6px; z-index: 4; }' +
         '.qform-sig-btn-clear { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); transition: all 0.15s; }' +
         '.qform-sig-btn-clear:hover { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }' +
-        '.qform-sig-line-container { margin-top: 6px; width: 100%; }' +
-        '.qform-sig-line { border-bottom: 1.5px solid #475569; width: 100%; margin-bottom: 3px; }' +
-        '.qform-sig-label { font-size: 12px; color: #475569; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }';
+        '.qform-sig-line-container { display: block; width: 100%; box-sizing: border-box; }' +
+        '.qform-sig-line { display: block; border-bottom: 1.5px solid #475569; width: 100%; margin-bottom: 3px; }' +
+        '.qform-sig-label { display: block; font-size: 12px; color: #475569; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }';
 
     function render(campo, options) {
         var name = campo.getAttribute('data-qfield-name') || 'campo';
@@ -43,7 +42,7 @@ var SignatureField = (function () {
         var placeholder = campo.getAttribute('data-qfield-placeholder') || '';
         var sigMode = campo.getAttribute('data-qfield-sigmode') || 'draw';
 
-        var sigContainer = document.createElement('div');
+        var sigContainer = document.createElement('span');
         sigContainer.className = 'qform-signature-wrapper';
         if (width && width !== 'auto') sigContainer.style.width = width;
         sigContainer.style.maxWidth = '100%';
@@ -55,13 +54,15 @@ var SignatureField = (function () {
         if (sigMode === 'upload') {
             sigContainer.classList.add('qform-signature-upload-wrapper');
 
-            var uploadBox = document.createElement('div');
+            var uploadBox = document.createElement('span');
             uploadBox.className = 'qform-sig-upload-box';
+            var effHeightUpload = (height && height !== 'auto') ? height : '110px';
+            uploadBox.style.height = effHeightUpload;
 
             var btnSign = document.createElement('button');
             btnSign.type = 'button';
             btnSign.className = 'qform-btn-sign';
-            btnSign.textContent = 'Assinar';
+            btnSign.innerHTML = '📁 Selecionar Assinatura';
 
             var fileInput = document.createElement('input');
             fileInput.type = 'file';
@@ -82,30 +83,31 @@ var SignatureField = (function () {
             hiddenVal.className = 'qform-sig-hidden-val';
             if (isRequired) hiddenVal.required = true;
 
-            var lineArea = document.createElement('div');
+            var lineArea = document.createElement('span');
             if (sigLabelText) {
                 lineArea.className = 'qform-sig-line-container';
-                lineArea.innerHTML = '<div class="qform-sig-line"></div><div class="qform-sig-label">' +
-                    (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</div>';
+                lineArea.innerHTML = '<span class="qform-sig-line"></span><span class="qform-sig-label">' +
+                    (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</span>';
             }
 
             uploadBox.appendChild(btnSign);
             uploadBox.appendChild(fileInput);
             uploadBox.appendChild(previewImg);
             uploadBox.appendChild(hiddenVal);
-            uploadBox.appendChild(lineArea);
 
             sigContainer.appendChild(uploadBox);
+            if (sigLabelText) {
+                sigContainer.appendChild(lineArea);
+            }
         } else {
             sigContainer.classList.add('qform-signature-draw-wrapper');
 
-            var drawBox = document.createElement('div');
+            var drawBox = document.createElement('span');
             drawBox.className = 'qform-sig-draw-box';
-            if (width && width !== 'auto') drawBox.style.width = width;
             var effHeight = (height && height !== 'auto') ? height : '130px';
             drawBox.style.height = effHeight;
 
-            var overlay = document.createElement('div');
+            var overlay = document.createElement('span');
             overlay.className = 'qform-sig-overlay';
             overlay.innerHTML = '<span class="qform-sig-overlay-icon">✍️</span> <span class="qform-sig-overlay-text">Toque ou clique para assinar</span>';
 
@@ -114,7 +116,7 @@ var SignatureField = (function () {
             canvas.style.display = 'none';
             canvas.style.touchAction = 'none';
 
-            var toolbar = document.createElement('div');
+            var toolbar = document.createElement('span');
             toolbar.className = 'qform-sig-toolbar';
             toolbar.style.display = 'none';
 
@@ -136,13 +138,17 @@ var SignatureField = (function () {
             drawBox.appendChild(toolbar);
             drawBox.appendChild(hiddenVal);
 
-            var lineArea = document.createElement('div');
-            lineArea.className = 'qform-sig-line-container';
-            lineArea.innerHTML = '<div class="qform-sig-line"></div><div class="qform-sig-label">' +
-                (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</div>';
+            var lineArea = document.createElement('span');
+            if (sigLabelText) {
+                lineArea.className = 'qform-sig-line-container';
+                lineArea.innerHTML = '<span class="qform-sig-line"></span><span class="qform-sig-label">' +
+                    (sigLabelText ? sigLabelText.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '') + '</span>';
+            }
 
             sigContainer.appendChild(drawBox);
-            sigContainer.appendChild(lineArea);
+            if (sigLabelText) {
+                sigContainer.appendChild(lineArea);
+            }
         }
 
         return sigContainer;

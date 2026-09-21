@@ -62,3 +62,32 @@ body.cke_editable {
    visibility: hidden !important;
    pointer-events: none !important;
 }
+
+/* Estilização da Quebra de Página dentro da folha A4 */
+.folha-a4 .cke_pagebreak {
+   margin: 16px 0 !important;
+   cursor: pointer !important;
+   clear: both !important;
+}
+
+/* Oculta a linha da quebra de página na tela de resposta do usuário final */
+#formularioRespostaContainer .cke_pagebreak {
+   display: none !important;
+}
+
+@media print {
+   body.cke_editable {
+      background: transparent !important;
+      padding: 0 !important;
+   }
+   .folha-a4 {
+      margin: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+   }
+   .cke_pagebreak {
+      display: none !important;
+   }
+}

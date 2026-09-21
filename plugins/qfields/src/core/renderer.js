@@ -58,8 +58,21 @@ var QFieldsCore = (function () {
             if (fieldHandler && typeof fieldHandler.render === 'function') {
                 var targetNode = fieldHandler.render(campo, options);
                 if (targetNode && campo.parentNode) {
-                    campo.parentNode.replaceChild(targetNode, campo);
+                    var innerWrapper = campo.closest ? campo.closest('.qfield-signature-inner') : null;
+                    if (innerWrapper && innerWrapper.parentNode) {
+                        innerWrapper.parentNode.replaceChild(targetNode, innerWrapper);
+                    } else {
+                        campo.parentNode.replaceChild(targetNode, campo);
+                    }
                 }
+            }
+        });
+
+        // Remove quaisquer invólucros residuais que tenham ficado vazios
+        var orphanInners = wrapper.querySelectorAll('.qfield-signature-inner');
+        orphanInners.forEach(function (orphan) {
+            if (orphan.parentNode) {
+                orphan.parentNode.removeChild(orphan);
             }
         });
 

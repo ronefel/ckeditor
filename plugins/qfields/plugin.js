@@ -259,16 +259,16 @@
                         var labelText = label || displayVal || 'Assinatura';
 
                         var sigHtml =
-                            '<div class="qfield-signature-inner">' +
-                                '<div class="qfield-signature-header">' +
+                            '<span class="qfield-signature-inner">' +
+                                '<span class="qfield-signature-header">' +
                                     '<span class="qfield-signature-icon">' + sigIcon + '</span>' +
                                     '<span class="qfield-signature-type-text">' + sigTypeLabel + '</span>' +
-                                '</div>' +
-                                '<div class="qfield-signature-bottom">' +
-                                    '<div class="qfield-signature-line"></div>' +
-                                    '<div class="qfield-signature-title">' + CKEDITOR.tools.htmlEncode(labelText) + '</div>' +
-                                '</div>' +
-                            '</div>';
+                                '</span>' +
+                                '<span class="qfield-signature-bottom">' +
+                                    '<span class="qfield-signature-line"></span>' +
+                                    '<span class="qfield-signature-title">' + CKEDITOR.tools.htmlEncode(labelText) + '</span>' +
+                                '</span>' +
+                            '</span>';
 
                         el.setHtml(sigHtml);
                     } else {
