@@ -254,6 +254,7 @@ body.document-contents,
 	outline: none;
 	font-family: inherit;
 	font-size: inherit;
+	line-height: inherit;
 	color: #000;
 	box-sizing: border-box;
 }
@@ -280,6 +281,7 @@ body.document-contents,
 	padding: 0;
 	margin: 0;
 	resize: none;
+	overflow: clip;
 }
 
 /* ==========================================================================
@@ -739,23 +741,17 @@ body.document-contents,
 	min-width: 60px;
 }
 
-.document-contents .qform-answer-textarea {
-	font-weight: 500;
-	color: #0f172a;
+.document-contents .qform-answer-textarea,
+.qform-answer-textarea {
+	font-weight: 600;
 	white-space: pre-wrap;
 	word-break: break-word;
-	border: 1px solid #cbd5e1;
-	border-radius: 4px;
-	padding: 8px 12px;
-	background-color: #f8fafc;
 	box-sizing: border-box;
-	margin: 4px 0;
-	line-height: 1.5;
+	overflow: hidden;
 }
 
 .document-contents .qform-answer-textarea.qform-answer-empty {
 	font-style: italic;
-	color: #94a3b8;
 	background-color: transparent;
 	border: 1px dashed #cbd5e1;
 }
@@ -763,7 +759,7 @@ body.document-contents,
 .document-contents .qform-answer-select {
 	font-weight: 600;
 	display: inline-block;
-	border-bottom: 1px solid #94a3b8;
+	border-bottom: 1px solid #000000;
 	margin-bottom: -1px;
 	box-sizing: border-box;
 	line-height: normal;

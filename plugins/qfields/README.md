@@ -31,6 +31,7 @@ plugins/qfields/
 ├── build.js                    # Compilador inteligente com minificação direta e detecção automática
 ├── plugin.js                   # Definição e registro do plugin e widget no CKEditor 4
 ├── render_qfields.js           # Arquivo ÚNICO compilado e MINIFICADO para produção (~18 KB)
+├── qfields_pdf.js              # Módulo desacoplado de exportação para PDF (A4 perfeito, sem CDN)
 └── README.md                   # Esta documentação
 ```
 
@@ -98,6 +99,52 @@ var cpfFormatado = QFieldsRenderer.formatWithMask('12345678901', '999.999.999-99
 
 var telFormatado = QFieldsRenderer.formatWithMask('11987654321', '(99) 9999-9999');
 // Ajusta dinamicamente para celular: "(11) 98765-4321"
+```
+
+### 5. Exportação de Questionários para PDF (Offline / Sem CDN)
+
+Para exportar questionários preenchidos e páginas A4 para PDF sem depender de conexões externas:
+
+```html
+<!-- 1. Biblioteca base local (em vendor/) -->
+<script src="../vendor/html2pdf.bundle.min.js"></script>
+
+<!-- 2. Utilitário de exportação do QFields -->
+<script src="../plugins/qfields/qfields_pdf.js"></script>
+```
+
+#### Exemplos de Uso:
+
+```javascript
+// Abrir em nova aba (preview no navegador)
+exportarParaPDF('meuContainerA4', 'questionario-respondido.pdf', btnElement);
+
+// Baixar arquivo diretamente no computador
+baixarPDF('meuContainerA4', 'questionario-respondido.pdf', btnElement);
+
+// 1. Obter Blob binário para envio ao backend via FormData
+gerarBlobPDF('meuContainerA4', 'laudo.pdf', btnElement).then(function(blob) {
+    var formData = new FormData();
+    formData.append('pdf', blob, 'laudo.pdf');
+    formData.append('id_paciente', 123);
+
+    fetch('/api/salvar-laudo', {
+        method: 'POST',
+        body: formData
+    });
+});
+
+// 2. Obter Base64 para envio via JSON
+gerarBase64PDF('meuContainerA4').then(function(base64Str) {
+    fetch('/api/questionarios/json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            pdf_base64: base64Str,
+            nome: 'laudo.pdf'
+        })
+    });
+});
 ```
 
 ---

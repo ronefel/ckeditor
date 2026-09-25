@@ -22,8 +22,12 @@ var TextareaField = (function () {
         if (options.readOnly) {
             var div = document.createElement('div');
             div.className = options.answerTextareaClass || 'qform-answer-textarea';
-            if (width) div.style.width = width;
-            if (height) div.style.minHeight = height;
+            if (width && width !== 'auto') div.style.width = width;
+            if (height && height !== 'auto') {
+                div.style.height = height;
+                div.style.maxHeight = height;
+                div.style.overflow = 'hidden';
+            }
             if (value) {
                 div.textContent = value;
             } else {
