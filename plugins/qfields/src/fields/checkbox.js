@@ -14,6 +14,37 @@ var CheckboxField = (function () {
         var isRequired = campo.getAttribute('data-qfield-required') === 'true';
         var defaultValue = campo.getAttribute('data-qfield-default') || '';
 
+        var values = options.values || options.answers || {};
+        var isChecked = false;
+        if (values && values[name] !== undefined) {
+            var val = values[name];
+            if (Array.isArray(val)) {
+                isChecked = val.indexOf('1') !== -1 || val.indexOf('true') !== -1 || (label && val.indexOf(label) !== -1) || val.indexOf(name) !== -1;
+            } else {
+                isChecked = (val === true || val === 'true' || val === '1' || val === 1 || val === 'checked' || (label && String(val).toLowerCase() === label.toLowerCase()));
+            }
+        } else {
+            isChecked = defaultValue === 'true' || defaultValue === '1' || defaultValue === 'checked';
+        }
+
+        if (options.readOnly) {
+            var answerSpan = document.createElement('span');
+            answerSpan.className = 'qform-answer-checkbox';
+
+            var chkBoxReadOnly = document.createElement('span');
+            // chkBoxReadOnly.className = 'qform-checkbox-box';
+            chkBoxReadOnly.innerHTML = '(&nbsp;<span class="qform-checkbox-mark" style="visibility: ' + (isChecked ? 'visible' : 'hidden') + ';">X</span>&nbsp;)';
+            answerSpan.appendChild(chkBoxReadOnly);
+
+            if (label) {
+                var textSpanReadOnly = document.createElement('span');
+                textSpanReadOnly.className = 'qform-checkbox-text';
+                textSpanReadOnly.textContent = ' ' + label;
+                answerSpan.appendChild(textSpanReadOnly);
+            }
+            return answerSpan;
+        }
+
         var chkContainer = document.createElement('span');
         chkContainer.className = 'qform-checkbox-container';
 
@@ -27,7 +58,6 @@ var CheckboxField = (function () {
         chk.className = 'qform-checkbox-input';
         if (isRequired) chk.required = true;
 
-        var isChecked = defaultValue === 'true' || defaultValue === '1' || defaultValue === 'checked';
         if (isChecked) {
             chk.checked = true;
             chk.setAttribute('checked', 'checked');

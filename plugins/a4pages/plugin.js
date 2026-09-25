@@ -386,10 +386,10 @@
             var win = folha.getWindow ? folha.getWindow().$ : window;
             var estilo = win.getComputedStyle ? win.getComputedStyle(el) : null;
             if (estilo && estilo.paddingBottom) {
-                return parseFloat(estilo.paddingBottom) || 80;
+                return parseFloat(estilo.paddingBottom) || 0;
             }
         } catch (e) { }
-        return 80; // padrão ~2.5cm
+        return 0; // padrão ~2.5cm
     }
 
     /**

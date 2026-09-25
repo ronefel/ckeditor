@@ -47,10 +47,46 @@
      */
     var QFieldsRenderer = {
         /**
-         * Renderiza o HTML do editor em um formulário preenchível
+         * Renderiza o HTML do editor em um formulário preenchível ou documento
+         * @param {string} htmlTemplate - HTML contendo os widgets .qfield-widget
+         * @param {object} [options] - Opções de estilização ou objeto de respostas
          */
         render: function (htmlTemplate, options) {
             return core.render(htmlTemplate, options, reg);
+        },
+
+        /**
+         * Renderiza o questionário preenchido com as respostas passadas.
+         * Por padrão mantém o formato de formulário editável com os inputs preenchidos.
+         * @param {string} htmlTemplate - HTML do questionário
+         * @param {object} answers - Objeto chave/valor com as respostas { nome: 'João', ... }
+         * @param {object} [options] - Opções adicionais de customização
+         */
+        renderWithAnswers: function (htmlTemplate, answers, options) {
+            options = options || {};
+            var merged = {};
+            for (var k in options) {
+                if (options.hasOwnProperty(k)) merged[k] = options[k];
+            }
+            merged.values = answers || options.values || options.answers || {};
+            return core.render(htmlTemplate, merged, reg);
+        },
+
+        /**
+         * Renderiza o questionário com as respostas no modo documento final estático / laudo (somente leitura para visualização e impressão).
+         * @param {string} htmlTemplate - HTML do questionário
+         * @param {object} answers - Objeto chave/valor com as respostas
+         * @param {object} [options] - Opções adicionais
+         */
+        renderDocument: function (htmlTemplate, answers, options) {
+            options = options || {};
+            var merged = {};
+            for (var k in options) {
+                if (options.hasOwnProperty(k)) merged[k] = options[k];
+            }
+            merged.values = answers || options.values || options.answers || {};
+            merged.readOnly = true;
+            return core.render(htmlTemplate, merged, reg);
         },
 
         /**

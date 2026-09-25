@@ -18,16 +18,9 @@ var SelectField = (function () {
         var optionsRaw = campo.getAttribute('data-qfield-options') || '';
         var defaultValue = campo.getAttribute('data-qfield-default') || '';
 
-        var select = document.createElement('select');
-        select.name = name;
-        select.className = selectClass;
-        if (width) select.style.width = width;
-        if (height && height !== '22px') select.style.height = height;
-        if (isRequired) select.required = true;
-
-        var defaultOptionText = label || placeholder || 'Selecione...';
-        var placeholderOption = new Option(defaultOptionText, '');
-        select.appendChild(placeholderOption);
+        var values = options.values || options.answers || {};
+        var rawValue = (values && values[name] !== undefined) ? values[name] : null;
+        var selectedVal = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : null;
 
         var optionsList = optionsRaw ? optionsRaw.split(',') : [];
         var effectiveSelectDefault = '';
@@ -43,11 +36,44 @@ var SelectField = (function () {
             effectiveSelectDefault = defaultValue;
         }
 
+        if (options.readOnly) {
+            var answerSpan = document.createElement('span');
+            answerSpan.className = options.answerSelectClass || 'qform-answer-select';
+            if (width && width !== 'auto') {
+                answerSpan.style.minWidth = width;
+            }
+            var displayAnswer = (selectedVal !== null) ? selectedVal : (effectiveSelectDefault || '');
+            if (displayAnswer) {
+                answerSpan.textContent = displayAnswer;
+            } else {
+                answerSpan.classList.add('qform-answer-empty');
+                answerSpan.innerHTML = '&nbsp;';
+            }
+            return answerSpan;
+        }
+
+        var select = document.createElement('select');
+        select.name = name;
+        select.className = selectClass;
+        if (width) select.style.width = width;
+        if (height && height !== '22px') select.style.height = height;
+        if (isRequired) select.required = true;
+
+        var defaultOptionText = label || placeholder || 'Selecione...';
+        var placeholderOption = new Option(defaultOptionText, '');
+        select.appendChild(placeholderOption);
+
         optionsList.forEach(function (opt) {
             var val = opt.trim().replace(/^\*/, '').trim();
             if (val) {
                 var optElem = new Option(val, val);
-                if (effectiveSelectDefault && val.toLowerCase() === effectiveSelectDefault.toLowerCase()) {
+                var isSelected = false;
+                if (selectedVal !== null) {
+                    isSelected = (val.toLowerCase() === selectedVal.toLowerCase());
+                } else if (effectiveSelectDefault) {
+                    isSelected = (val.toLowerCase() === effectiveSelectDefault.toLowerCase());
+                }
+                if (isSelected) {
                     optElem.selected = true;
                     optElem.setAttribute('selected', 'selected');
                 }

@@ -15,6 +15,24 @@ var TextareaField = (function () {
         var isRequired = campo.getAttribute('data-qfield-required') === 'true';
         var placeholder = campo.getAttribute('data-qfield-placeholder') || '';
 
+        var values = options.values || options.answers || {};
+        var rawValue = (values && values[name] !== undefined) ? values[name] : null;
+        var value = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : '';
+
+        if (options.readOnly) {
+            var div = document.createElement('div');
+            div.className = options.answerTextareaClass || 'qform-answer-textarea';
+            if (width) div.style.width = width;
+            if (height) div.style.minHeight = height;
+            if (value) {
+                div.textContent = value;
+            } else {
+                div.classList.add('qform-answer-empty');
+                div.innerHTML = '&nbsp;';
+            }
+            return div;
+        }
+
         var textarea = document.createElement('textarea');
         textarea.name = name;
         textarea.className = textareaClass;
@@ -25,6 +43,7 @@ var TextareaField = (function () {
         }
         if (placeholder) textarea.placeholder = placeholder;
         if (isRequired) textarea.required = true;
+        if (value) textarea.value = value;
 
         return textarea;
     }

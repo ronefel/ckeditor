@@ -721,3 +721,391 @@ body.document-contents,
 	font-size: 13px;
 	margin-left: 2px;
 }
+
+/* ==========================================================================
+   Estilos de Visualização das Respostas do Questionário (Modo Documento)
+   ========================================================================== */
+.document-contents .qform-answer-text {
+	font-weight: 600;
+	display: inline-block;
+	border-bottom: 1px solid #000000;
+	margin-bottom: -1px;
+	box-sizing: border-box;
+	line-height: normal;
+}
+
+.document-contents .qform-answer-text.qform-answer-empty {
+	border-bottom: 1px dashed #cbd5e1;
+	min-width: 60px;
+}
+
+.document-contents .qform-answer-textarea {
+	font-weight: 500;
+	color: #0f172a;
+	white-space: pre-wrap;
+	word-break: break-word;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	padding: 8px 12px;
+	background-color: #f8fafc;
+	box-sizing: border-box;
+	margin: 4px 0;
+	line-height: 1.5;
+}
+
+.document-contents .qform-answer-textarea.qform-answer-empty {
+	font-style: italic;
+	color: #94a3b8;
+	background-color: transparent;
+	border: 1px dashed #cbd5e1;
+}
+
+.document-contents .qform-answer-select {
+	font-weight: 600;
+	display: inline-block;
+	border-bottom: 1px solid #94a3b8;
+	margin-bottom: -1px;
+	box-sizing: border-box;
+	line-height: normal;
+}
+
+.document-contents .qform-answer-select.qform-answer-empty {
+	border-bottom: 1px dashed #cbd5e1;
+	min-width: 60px;
+}
+
+.document-contents .qform-answer-checkbox,
+.document-contents .qform-answer-radio-item {
+	display: inline-flex;
+	align-items: center;
+	font-family: inherit;
+	font-size: inherit;
+	user-select: none;
+	line-height: normal;
+}
+
+.document-contents .qform-answer-checkbox .qform-checkbox-box,
+.document-contents .qform-answer-radio-item .qform-radio-box {
+	display: inline-block;
+	background-color: transparent;
+	font-family: inherit;
+	color: #000;
+	white-space: nowrap;
+}
+
+.document-contents .qform-answer-checkbox .qform-checkbox-mark,
+.document-contents .qform-answer-radio-item .qform-radio-mark {
+	display: inline-block;
+	width: 1ch;
+	text-align: center;
+	font-weight: bold;
+}
+
+.document-contents .qform-answer-radio-container {
+	display: inline-block;
+	margin: 0;
+}
+
+.document-contents .qform-signature-wrapper {
+	display: inline-block;
+	vertical-align: top;
+	box-sizing: border-box;
+	font-family: inherit;
+	text-align: left;
+	max-width: 100%;
+}
+
+.document-contents .qform-sig-answer-wrapper {
+	text-align: center;
+}
+
+.document-contents .qform-signature-upload-wrapper {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.document-contents .qform-sig-upload-box {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 110px;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.document-contents .qform-btn-sign {
+	background-color: #2563eb;
+	color: #ffffff;
+	border: none;
+	padding: 7px 16px;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s, transform 0.1s;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.document-contents .qform-btn-sign:hover {
+	background-color: #1d4ed8;
+}
+
+.document-contents .qform-btn-sign:active {
+	transform: scale(0.98);
+}
+
+.document-contents .qform-btn-sign.qform-btn-signed {
+	background-color: #f1f5f9;
+	color: #334155;
+	border: 1px solid #cbd5e1;
+}
+
+.document-contents .qform-btn-sign.qform-btn-signed:hover {
+	background-color: #e2e8f0;
+}
+
+.document-contents .qform-sig-file-input {
+	display: none;
+}
+
+.document-contents .qform-sig-preview-img {
+	display: none;
+	max-width: 100%;
+	max-height: 100%;
+	border: 1px dashed #cbd5e1;
+	border-radius: 4px;
+	background-color: #fff;
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+.document-contents .qform-signature-draw-wrapper {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.document-contents .qform-sig-draw-box {
+	display: block;
+	position: relative;
+	background-color: transparent;
+	border: 1.5px dashed #94a3b8;
+	border-radius: 6px;
+	box-sizing: border-box;
+	overflow: hidden;
+	height: 130px;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.document-contents .qform-sig-draw-box.is-active {
+	border-style: solid;
+	border-color: #2563eb;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.document-contents .qform-sig-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	color: #475569;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	user-select: none;
+	z-index: 3;
+	transition: background 0.15s;
+	box-sizing: border-box;
+	padding-bottom: 24px;
+}
+
+.document-contents .qform-sig-overlay-icon {
+	font-size: 18px;
+}
+
+.document-contents .qform-sig-canvas {
+	width: 100%;
+	height: 100%;
+	display: none;
+	cursor: crosshair;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	background: transparent;
+	touch-action: none;
+}
+
+.document-contents .qform-sig-toolbar {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	display: none;
+	gap: 6px;
+	z-index: 4;
+}
+
+.document-contents .qform-sig-btn-clear {
+	background: #ffffff;
+	color: #475569;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	padding: 3px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	transition: all 0.15s;
+}
+
+.document-contents .qform-sig-btn-clear:hover {
+	background: #f1f5f9;
+	color: #0f172a;
+	border-color: #94a3b8;
+}
+
+.document-contents .qform-sig-draw-box .qform-sig-line-container {
+	position: absolute;
+	bottom: 8px;
+	left: 12px;
+	right: 12px;
+	width: auto;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.document-contents .qform-sig-draw-preview {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.document-contents .qform-sig-answer-box,
+.qform-sig-answer-box {
+	position: relative;
+	width: 100%;
+	height: 120px;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+/* Modo A Punho (Draw) em Readonly: posicionamento absoluto idêntico ao canvas de desenho sobre a linha */
+.document-contents .qform-sig-answer-draw-box,
+.qform-sig-answer-draw-box {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 130px;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.document-contents .qform-sig-answer-draw-box .qform-sig-answer-img,
+.qform-sig-answer-draw-box .qform-sig-answer-img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	max-height: none;
+	max-width: 100%;
+	object-fit: contain;
+	pointer-events: none;
+	margin: 0;
+}
+
+.document-contents .qform-sig-answer-draw-box .qform-sig-line-container,
+.qform-sig-answer-draw-box .qform-sig-line-container {
+	position: absolute;
+	bottom: 8px;
+	left: 12px;
+	right: 12px;
+	width: auto;
+	box-sizing: border-box;
+	pointer-events: none;
+}
+
+/* Modo Upload em Readonly: exibe a imagem centralizada acima da linha respeitando a largura ajustada pelo respondente */
+.document-contents .qform-sig-answer-upload-box,
+.qform-sig-answer-upload-box {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	width: 100%;
+	height: 120px;
+	box-sizing: border-box;
+	overflow: hidden;
+	gap: 4px;
+}
+
+.document-contents .qform-sig-answer-upload-box .qform-sig-answer-img,
+.qform-sig-answer-upload-box .qform-sig-answer-img {
+	display: block;
+	max-width: 100%;
+	max-height: calc(100% - 28px);
+	height: auto;
+	object-fit: contain;
+	margin: 0 auto;
+}
+
+.document-contents .qform-sig-answer-upload-box .qform-sig-line-container,
+.qform-sig-answer-upload-box .qform-sig-line-container {
+	margin-bottom: 8px;
+}
+
+.document-contents .qform-sig-line-container {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.document-contents .qform-sig-line {
+	display: block;
+	border-bottom: 1.5px solid #000000;
+	width: 100%;
+	margin-bottom: 3px;
+}
+
+.document-contents .qform-sig-label {
+	display: block;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Alça e overlay de redimensionamento da imagem de assinatura */
+.qform-sig-resizer-overlay {
+	position: absolute;
+	border: 1.5px dashed #2563eb;
+	box-sizing: border-box;
+	z-index: 99999;
+	pointer-events: none;
+}
+
+.qform-sig-resizer-handle {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	right: -5px;
+	bottom: -5px;
+	background-color: #2563eb;
+	border: 1px solid #ffffff;
+	cursor: se-resize;
+	pointer-events: auto;
+}

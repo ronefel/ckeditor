@@ -33,14 +33,29 @@ var QFieldsCore = (function () {
     /**
      * Renderiza o HTML do template transformando os widgets nos inputs reais correspondentes
      * @param {string} htmlTemplate - HTML retornado pelo editor.getData()
-     * @param {object} [options] - Opções de customização de classes
+     * @param {object} [options] - Opções de customização ou objeto de respostas
      * @param {object} registry - Registro com os tipos de campos disponíveis
-     * @returns {string} HTML com o formulário pronto
+     * @returns {string} HTML com o formulário ou documento pronto
      */
     function render(htmlTemplate, options, registry) {
         if (!htmlTemplate) return '';
 
         options = options || {};
+
+        // Normaliza respostas se passadas diretamente no segundo parâmetro
+        var answersObj = options.values || options.answers;
+        if (!answersObj && typeof options === 'object') {
+            var knownKeys = ['textClass', 'selectClass', 'textareaClass', 'readOnly', 'mode', 'values', 'answers'];
+            var hasConfigKeys = Object.keys(options).some(function (k) { return knownKeys.indexOf(k) !== -1; });
+            if (!hasConfigKeys && Object.keys(options).length > 0) {
+                answersObj = options;
+            }
+        }
+
+        var isReadOnly = !!options.readOnly || options.mode === 'document' || options.mode === 'static' || options.mode === 'readonly';
+        options.readOnly = isReadOnly;
+        options.values = answersObj || {};
+
         var textClass = options.textClass || 'qform-input-text';
         var selectClass = options.selectClass || 'qform-select';
         var textareaClass = options.textareaClass || 'qform-textarea';
@@ -88,6 +103,15 @@ var QFieldsCore = (function () {
                 inputEl.className = textClass;
             }
         });
+
+        // Se estiver no modo somente leitura (documento final), desabilita quaisquer inputs nativos residuais
+        if (options.readOnly) {
+            var leftoverInputs = wrapper.querySelectorAll('input, select, textarea, button');
+            leftoverInputs.forEach(function (el) {
+                el.disabled = true;
+                el.setAttribute('readonly', 'readonly');
+            });
+        }
 
         return wrapper.innerHTML;
     }

@@ -51,6 +51,28 @@ var TextField = (function () {
         var placeholder = campo.getAttribute('data-qfield-placeholder') || '';
         var mask = campo.getAttribute('data-qfield-mask') || '';
 
+        var values = options.values || options.answers || {};
+        var rawValue = (values && values[name] !== undefined) ? values[name] : null;
+        var value = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : '';
+        if (value && mask) {
+            value = formatWithMask(value, mask);
+        }
+
+        if (options.readOnly) {
+            var span = document.createElement('span');
+            span.className = options.answerTextClass || 'qform-answer-text';
+            if (width && width !== 'auto') {
+                span.style.minWidth = width;
+            }
+            if (value) {
+                span.textContent = value;
+            } else {
+                // span.classList.add('qform-answer-empty');
+                span.innerHTML = '&nbsp;';
+            }
+            return span;
+        }
+
         var input = document.createElement('input');
         input.type = 'text';
         input.name = name;
@@ -59,6 +81,7 @@ var TextField = (function () {
         if (height && height !== '22px') input.style.height = height;
         if (placeholder) input.placeholder = placeholder;
         if (isRequired) input.required = true;
+        if (value) input.value = value;
 
         if (mask) {
             input.setAttribute('data-qfield-mask', mask);

@@ -15,8 +15,10 @@ var RadioField = (function () {
         var optionsRaw = campo.getAttribute('data-qfield-options') || '';
         var defaultValue = campo.getAttribute('data-qfield-default') || '';
 
-        var radioContainer = document.createElement('span');
-        radioContainer.className = 'qform-radio-container';
+        var values = options.values || options.answers || {};
+        var rawValue = (values && values[name] !== undefined) ? values[name] : null;
+        var answeredVal = (rawValue !== null && rawValue !== undefined) ? String(rawValue) : null;
+
         var radioOptions = optionsRaw ? optionsRaw.split(',') : [];
         var effectiveRadioDefault = '';
 
@@ -32,6 +34,68 @@ var RadioField = (function () {
             effectiveRadioDefault = defaultValue;
         }
 
+        if (options.readOnly) {
+            var roContainer = document.createElement('span');
+            roContainer.className = 'qform-answer-radio-container';
+            if (radioOptions.length > 0) {
+                radioOptions.forEach(function (opt) {
+                    var val = opt.trim().replace(/^\*/, '').trim();
+                    if (val) {
+                        var isChecked = false;
+                        if (answeredVal !== null) {
+                            isChecked = (val.toLowerCase() === answeredVal.toLowerCase());
+                        } else if (effectiveRadioDefault) {
+                            isChecked = (val.toLowerCase() === effectiveRadioDefault.toLowerCase());
+                        }
+
+                        var itemSpan = document.createElement('span');
+                        itemSpan.className = 'qform-answer-radio-item';
+
+                        var rBox = document.createElement('span');
+                        // rBox.className = 'qform-radio-box';
+                        rBox.innerHTML = '(&nbsp;<span class="qform-radio-mark" style="visibility: ' + (isChecked ? 'visible' : 'hidden') + ';">X</span>&nbsp;)';
+
+                        var textSpan = document.createElement('span');
+                        textSpan.className = 'qform-radio-text';
+                        textSpan.textContent = val;
+
+                        itemSpan.appendChild(rBox);
+                        itemSpan.appendChild(textSpan);
+                        roContainer.appendChild(itemSpan);
+                    }
+                });
+            } else {
+                var radioVal = label || name || '1';
+                var isChecked = false;
+                if (answeredVal !== null) {
+                    isChecked = (answeredVal === 'true' || answeredVal === '1' || answeredVal.toLowerCase() === radioVal.toLowerCase());
+                } else {
+                    isChecked = (defaultValue === 'true' || defaultValue === '1' || (defaultValue && defaultValue.toLowerCase() === radioVal.toLowerCase()));
+                }
+
+                var itemSpan = document.createElement('span');
+                itemSpan.className = 'qform-answer-radio-item';
+
+                var rBox = document.createElement('span');
+                rBox.className = 'qform-radio-box';
+                rBox.innerHTML = '(&nbsp;<span class="qform-radio-mark" style="visibility: ' + (isChecked ? 'visible' : 'hidden') + ';">X</span>&nbsp;)';
+
+                itemSpan.appendChild(rBox);
+
+                if (label) {
+                    var textSpan = document.createElement('span');
+                    textSpan.className = 'qform-radio-text';
+                    textSpan.textContent = label;
+                    itemSpan.appendChild(textSpan);
+                }
+                roContainer.appendChild(itemSpan);
+            }
+            return roContainer;
+        }
+
+        var radioContainer = document.createElement('span');
+        radioContainer.className = 'qform-radio-container';
+
         if (radioOptions.length > 0) {
             radioOptions.forEach(function (opt) {
                 var val = opt.trim().replace(/^\*/, '').trim();
@@ -45,7 +109,14 @@ var RadioField = (function () {
                     radio.value = val;
                     radio.className = 'qform-radio-input';
                     if (isRequired) radio.required = true;
-                    if (effectiveRadioDefault && val.toLowerCase() === effectiveRadioDefault.toLowerCase()) {
+
+                    var isSelected = false;
+                    if (answeredVal !== null) {
+                        isSelected = (val.toLowerCase() === answeredVal.toLowerCase());
+                    } else if (effectiveRadioDefault) {
+                        isSelected = (val.toLowerCase() === effectiveRadioDefault.toLowerCase());
+                    }
+                    if (isSelected) {
                         radio.checked = true;
                         radio.setAttribute('checked', 'checked');
                     }
@@ -75,7 +146,14 @@ var RadioField = (function () {
             radio.value = radioVal;
             radio.className = 'qform-radio-input';
             if (isRequired) radio.required = true;
-            if (defaultValue === 'true' || defaultValue === '1' || (defaultValue && defaultValue.toLowerCase() === radioVal.toLowerCase())) {
+
+            var isSelected = false;
+            if (answeredVal !== null) {
+                isSelected = (answeredVal === 'true' || answeredVal === '1' || answeredVal.toLowerCase() === radioVal.toLowerCase());
+            } else {
+                isSelected = (defaultValue === 'true' || defaultValue === '1' || (defaultValue && defaultValue.toLowerCase() === radioVal.toLowerCase()));
+            }
+            if (isSelected) {
                 radio.checked = true;
                 radio.setAttribute('checked', 'checked');
             }

@@ -9,6 +9,10 @@
     <script>CKEDITOR.timestamp = 'no_toolbar_' + Date.now();</script>
     <link rel="stylesheet" href="../contents.css">
     <link rel="stylesheet" href="../plugins/a4pages/styles/a4pages.css">
+    <!-- html2pdf.js CDN Oficial (v0.10.1) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+        integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -165,6 +169,9 @@
             font-size: 13px;
             white-space: pre-wrap;
             display: none;
+            word-wrap: anywhere;
+            max-height: 400px;
+            overflow: auto;
         }
     </style>
 </head>
@@ -183,10 +190,14 @@
             <div class="card">
                 <div class="card-header">
                     <h2><span>✏️</span> 1. Editor do Questionário (Plugin a4pages &bull; Folhas em Divs com Trava)</h2>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button type="button" class="btn" style="background-color: #059669;"
                             onclick="editorInstance.execCommand('addA4Page')">
                             + Nova Página A4
+                        </button>
+                        <button type="button" class="btn" style="background-color: #dc2626;"
+                            onclick="exportarCKEditorParaPDF(this)">
+                            📄 Abrir PDF do Modelo
                         </button>
                         <button type="button" class="btn" onclick="gerarFormularioResposta()">
                             Visualizar Formulário de Resposta ➔
@@ -201,9 +212,6 @@
                 </p>
                 <div id="editor">
                     <div class="folha-a4" data-page="1">
-                        <p style="text-align: center;">
-                            <img src="img/logo.png" alt="Logo Exemplo" style="width: 160px; height: auto;" />
-                        </p>
                         <p style="text-align: center; font-weight: bold; font-size: 16px;">
                             FICHA DE AVALIAÇÃO CLÍNICA (PÁGINA 1)
                         </p>
@@ -289,14 +297,50 @@
                             Clique no botão acima "Visualizar Formulário de Resposta" para gerar a versão preenchível.
                         </p>
                     </div>
-                    <div style="margin-top: 20px;">
+                    <div style="margin-top: 20px; display: flex; gap: 8px;">
                         <button type="submit" class="btn btn-success">
                             Enviar Respostas do Questionário
+                        </button>
+                        <button type="button" class="btn" style="background-color: #6366f1;"
+                            onclick="preencherExemplo()">
+                            ⚡ Preencher com Dados de Exemplo
                         </button>
                     </div>
                 </form>
 
                 <div id="jsonResultado" class="result-box"></div>
+            </div>
+
+            <!-- PAINEL 3: QUESTIONÁRIO RENDERIZADO COM AS RESPOSTAS -->
+            <div class="card" id="painelDocumentoFinal" style="display: none;">
+                <div class="card-header">
+                    <h2><span>📄</span> 3. Questionário Respondido (Laudo / Visualização das Respostas)</h2>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn" id="btnModoDoc" style="background-color: #0284c7;"
+                            onclick="alternarModoVisualizacao('document')">
+                            Modo Documento (Somente Leitura)
+                        </button>
+                        <button type="button" class="btn" id="btnModoForm" style="background-color: #475569;"
+                            onclick="alternarModoVisualizacao('form')">
+                            Modo Formulário (Pré-preenchido)
+                        </button>
+                        <button type="button" class="btn" style="background-color: #16a34a;" onclick="window.print()">
+                            🖨️ Imprimir
+                        </button>
+                        <button type="button" class="btn" id="btnBaixarPDF" style="background-color: #dc2626;"
+                            onclick="exportarParaPDF('documentoFinalContainer', 'questionario-respondido.pdf', this)">
+                            📄 Abrir PDF em Nova Aba
+                        </button>
+                    </div>
+                </div>
+                <p style="font-size: 13px; color: #64748b; margin-top: 0;">
+                    Demonstração dos novos métodos <code>QFieldsRenderer.renderDocument(html, respostas)</code> e
+                    <code>QFieldsRenderer.renderWithAnswers(html, respostas)</code>. O questionário mantém as páginas A4
+                    intactas e substitui os campos pelas respostas preenchidas.
+                </p>
+
+                <div id="documentoFinalContainer" class="document-contents">
+                </div>
             </div>
         </div>
     </div>
@@ -322,6 +366,96 @@
         }
 
         /**
+         * Preenche o formulário com dados de exemplo para teste rápido
+         */
+        function preencherExemplo() {
+            var form = document.getElementById('meuFormularioResposta');
+            var campos = {
+                'nome_completo': 'Dr. Carlos Eduardo da Silva',
+                'idade': '42',
+                'data_nascimento': '12/04/1984',
+                'peso': '78',
+                'responsavel': 'Mariana Souza Santos',
+                'cpf': '321.654.987-00',
+                'data_exame': '23/09/2026',
+                'tipo_atendimento': 'Emergência'
+            };
+            for (var k in campos) {
+                var el = form.querySelector('[name="' + k + '"]');
+                if (el) el.value = campos[k];
+            }
+            var chkUrgente = form.querySelector('[name="urgente"]');
+            if (chkUrgente) chkUrgente.checked = true;
+
+            var chkAcomp = form.querySelector('[name="acompanhante"]');
+            if (chkAcomp) chkAcomp.checked = false;
+
+            var radioFumante = form.querySelector('input[type="radio"][value="Não"]');
+            if (radioFumante) radioFumante.checked = true;
+
+            // Assinatura simulada em base64 (pequeno traço SVG/PNG transparente)
+            var canvasDummy = document.createElement('canvas');
+            canvasDummy.width = 200;
+            canvasDummy.height = 60;
+            var ctx = canvasDummy.getContext('2d');
+            ctx.strokeStyle = '#1e3a8a';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(10, 45);
+            ctx.bezierCurveTo(40, 10, 70, 50, 100, 20);
+            ctx.bezierCurveTo(130, -5, 150, 40, 190, 30);
+            ctx.stroke();
+            var dummySig = canvasDummy.toDataURL('image/png');
+
+            var sigPaciente = form.querySelector('[name="assinatura_paciente"]');
+            if (sigPaciente) {
+                sigPaciente.value = dummySig;
+                var drawBox = sigPaciente.closest('.qform-sig-draw-box');
+                if (drawBox) {
+                    var overlay = drawBox.querySelector('.qform-sig-overlay');
+                    if (overlay) overlay.style.display = 'none';
+                    drawBox.classList.add('is-active');
+                    var oldPrev = drawBox.querySelector('.qform-sig-draw-preview');
+                    if (oldPrev) oldPrev.parentNode.removeChild(oldPrev);
+                    var img = document.createElement('img');
+                    img.className = 'qform-sig-draw-preview';
+                    img.src = dummySig;
+                    img.style.position = 'absolute';
+                    img.style.top = '0';
+                    img.style.left = '0';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'contain';
+                    img.style.pointerEvents = 'none';
+                    img.style.zIndex = '2';
+                    drawBox.appendChild(img);
+                    var tb = drawBox.querySelector('.qform-sig-toolbar');
+                    if (tb) tb.style.display = 'flex';
+                }
+            }
+
+            var sigProf = form.querySelector('[name="assinatura_profissional"]');
+            if (sigProf) {
+                sigProf.value = dummySig;
+                var uploadBox = sigProf.closest('.qform-sig-upload-box');
+                if (uploadBox) {
+                    var prev = uploadBox.querySelector('.qform-sig-preview-img');
+                    if (prev) {
+                        prev.src = dummySig;
+                        prev.style.display = 'inline-block';
+                        prev.style.width = '240px';
+                    }
+                    var hw = uploadBox.querySelector('.qform-sig-hidden-width');
+                    if (hw) {
+                        hw.value = '240px';
+                    }
+                    var btn = uploadBox.querySelector('.qform-btn-sign');
+                    if (btn) btn.style.display = 'none';
+                }
+            }
+        }
+
+        /**
          * Simula o envio do formulário de resposta pelo usuário
          */
         function enviarRespostas(event) {
@@ -341,10 +475,201 @@
                 }
             });
 
+            // Se checkboxes desmarcados não vieram no FormData, garante registro
+            var checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(function (chk) {
+                if (!chk.checked && !resultado[chk.name]) {
+                    resultado[chk.name] = 'false';
+                }
+            });
+
+            window.ultimasRespostas = resultado;
+
             var jsonBox = document.getElementById('jsonResultado');
             jsonBox.style.display = 'block';
             jsonBox.textContent = 'Respostas enviadas com sucesso:\n\n' + JSON.stringify(resultado, null, 2);
-            jsonBox.scrollIntoView({ behavior: 'smooth' });
+
+            // Renderiza e exibe o Painel 3 com o questionário respondido
+            renderizarQuestionarioRespondido('document');
+            var painel3 = document.getElementById('painelDocumentoFinal');
+            painel3.style.display = 'block';
+            painel3.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /**
+         * Renderiza o questionário com as respostas salvas
+         */
+        function renderizarQuestionarioRespondido(modo) {
+            var htmlDoEditor = editorInstance.getData();
+            var respostas = window.ultimasRespostas || {};
+            var container = document.getElementById('documentoFinalContainer');
+
+            var btnDoc = document.getElementById('btnModoDoc');
+            var btnForm = document.getElementById('btnModoForm');
+
+            if (modo === 'form') {
+                container.innerHTML = QFieldsRenderer.renderWithAnswers(htmlDoEditor, respostas);
+                btnForm.style.backgroundColor = '#0284c7';
+                btnDoc.style.backgroundColor = '#475569';
+            } else {
+                container.innerHTML = QFieldsRenderer.renderDocument(htmlDoEditor, respostas);
+                btnDoc.style.backgroundColor = '#0284c7';
+                btnForm.style.backgroundColor = '#475569';
+            }
+        }
+
+        function alternarModoVisualizacao(modo) {
+            renderizarQuestionarioRespondido(modo);
+        }
+
+        var LOGO_PADRAO_BASE64 = 'data:image/png;base64,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';
+
+        /**
+         * Exporta um container ou elemento com folhas A4 para arquivo PDF via html2pdf.js
+         * @param {string|HTMLElement} target - ID ou elemento a ser exportado
+         * @param {string} nomeArquivo - Nome do arquivo PDF gerado
+         * @param {HTMLElement} [btnElement] - Botão acionador para feedback visual
+         */
+        function exportarParaPDF(target, nomeArquivo, btnElement) {
+            if (typeof html2pdf === 'undefined') {
+                alert('A biblioteca html2pdf.js não foi carregada. Verifique sua conexão com a internet.');
+                return;
+            }
+
+            var elementoOriginal = typeof target === 'string' ? document.getElementById(target) : target;
+            if (!elementoOriginal || !elementoOriginal.innerHTML.trim()) {
+                alert('Nenhum conteúdo disponível para gerar o PDF.');
+                return;
+            }
+
+            var textoOriginalBtn = '';
+            if (btnElement) {
+                textoOriginalBtn = btnElement.innerHTML;
+                btnElement.disabled = true;
+                btnElement.innerHTML = '⏳ Gerando PDF...';
+            }
+
+            // Clona o nó para isolar as alterações de estilo do PDF da tela do usuário
+            var clone = elementoOriginal.cloneNode(true);
+
+            clone.style.padding = '0';
+            clone.style.margin = '0';
+            clone.style.width = '210mm';
+            clone.style.maxWidth = '210mm';
+            clone.style.boxSizing = 'border-box';
+            clone.style.backgroundColor = '#ffffff';
+
+            // Ajusta as páginas A4 no clone para remoção de sombras, bordas e alinhamento milimétrico exato
+            var folhas = clone.querySelectorAll('.folha-a4');
+            folhas.forEach(function (folha, idx) {
+                folha.style.margin = '0';
+                folha.style.width = '210mm';
+                folha.style.maxWidth = '210mm';
+                folha.style.boxShadow = 'none';
+                folha.style.border = 'none';
+                // 296mm (com box-sizing) evita que o arredondamento de subpixel (1122.5px -> 1123px) exceda os 297mm do A4
+                folha.style.height = '296mm';
+                folha.style.maxHeight = '296mm';
+                folha.style.boxSizing = 'border-box';
+                folha.style.pageBreakAfter = 'auto';
+                folha.style.breakAfter = 'auto';
+
+                // Quebra página apenas antes das folhas subsequentes (evita folha em branco no início e no final)
+                if (idx > 0) {
+                    folha.style.pageBreakBefore = 'always';
+                    folha.style.breakBefore = 'page';
+                } else {
+                    folha.style.pageBreakBefore = 'auto';
+                    folha.style.breakBefore = 'auto';
+                }
+            });
+
+            var nomeFinal = nomeArquivo || 'questionario-respondido.pdf';
+            if (!nomeFinal.toLowerCase().endsWith('.pdf')) {
+                nomeFinal += '.pdf';
+            }
+
+            var opt = {
+                margin: 0,
+                filename: nomeFinal,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0,
+                    scrollX: 0,
+                    x: 0,
+                    y: 0,
+                    width: 794
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: {
+                    mode: ['css', 'legacy']
+                }
+            };
+
+            // Abre a nova aba imediatamente no clique para não ser bloqueada pelo navegador
+            var novaAba = window.open('', '_blank');
+            if (novaAba) {
+                novaAba.document.write('<!DOCTYPE html><html><head><title>Gerando PDF...</title></head><body style="margin:0;padding:0;background:#525659;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#fff;"><p style="font-size:18px;">⏳ Gerando visualização do PDF, aguarde...</p></body></html>');
+            }
+
+            // Gera o PDF garantindo alinhamento x=0 no container do html2pdf
+            html2pdf().set(opt).from(clone).toContainer().then(function () {
+                if (this.prop && this.prop.container) {
+                    this.prop.container.style.position = 'absolute';
+                    this.prop.container.style.left = '0px';
+                    this.prop.container.style.right = 'auto';
+                    this.prop.container.style.margin = '0px';
+                    this.prop.container.style.padding = '0px';
+                    this.prop.container.style.width = '210mm';
+                }
+                if (this.prop && this.prop.overlay) {
+                    this.prop.overlay.style.margin = '0px';
+                    this.prop.overlay.style.padding = '0px';
+                }
+            }).output('bloburl').then(function (blobUrl) {
+                if (novaAba && !novaAba.closed) {
+                    novaAba.document.title = opt.filename;
+                    novaAba.document.body.style.margin = '0';
+                    novaAba.document.body.innerHTML = '<iframe src="' + blobUrl + '" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;" frameborder="0"></iframe>';
+                } else {
+                    window.open(blobUrl, '_blank');
+                }
+
+                if (btnElement) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = textoOriginalBtn;
+                }
+            }).catch(function (erro) {
+                console.error('Erro ao gerar PDF:', erro);
+                if (novaAba && !novaAba.closed) {
+                    novaAba.close();
+                }
+                if (btnElement) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = textoOriginalBtn;
+                }
+                alert('Ocorreu um erro ao gerar o PDF. Verifique o console.');
+            });
+        }
+
+        /**
+         * Exporta diretamente o questionário que está em edição no CKEditor
+         * @param {HTMLElement} [btnElement] - Botão acionador
+         */
+        function exportarCKEditorParaPDF(btnElement) {
+            var htmlDoEditor = editorInstance.getData();
+            var divTemporaria = document.createElement('div');
+            divTemporaria.className = 'document-contents';
+            divTemporaria.innerHTML = htmlDoEditor;
+
+            exportarParaPDF(divTemporaria, 'modelo-questionario.pdf', btnElement);
         }
     </script>
 

@@ -44,7 +44,7 @@ Inclua o script compilado na página em que deseja exibir o formulário de respo
 <script src="../plugins/qfields/render_qfields.js"></script>
 ```
 
-### 1. Converter HTML do CKEditor em Formulário
+### 1. Converter HTML do CKEditor em Formulário Interativo
 
 ```javascript
 // Obtém o HTML salvo do editor
@@ -61,7 +61,35 @@ var htmlFormulario = QFieldsRenderer.render(htmlSalvo, {
 document.getElementById('formularioContainer').innerHTML = htmlFormulario;
 ```
 
-### 2. Utilitário de Formatação de Máscaras
+### 2. Renderizar Questionário com as Respostas (Documento / Laudo Final)
+
+Para gerar a visualização estática do questionário preenchido (ideal para visualização final de laudos, prontuários, contratos e impressão/PDF):
+
+```javascript
+var respostas = {
+    nome_completo: "Carlos Alberto da Silva",
+    cpf: "12345678901",
+    tipo_atendimento: "Emergência",
+    urgente: "1",               // ou true
+    fumante: "Não",
+    assinatura_paciente: "data:image/png;base64,..."
+};
+
+// Renderiza o questionário como documento estático (somente leitura)
+var htmlDocumento = QFieldsRenderer.renderDocument(htmlSalvo, respostas);
+document.getElementById('laudoContainer').innerHTML = htmlDocumento;
+```
+
+### 3. Renderizar Formulário Pré-preenchido com Respostas (Modo Edição)
+
+Para recarregar o questionário mantendo os campos interativos preenchidos para edição:
+
+```javascript
+var htmlFormPreenchido = QFieldsRenderer.renderWithAnswers(htmlSalvo, respostas);
+document.getElementById('formularioContainer').innerHTML = htmlFormPreenchido;
+```
+
+### 4. Utilitário de Formatação de Máscaras
 
 ```javascript
 // Exemplo de uso avulso da função de máscara:
